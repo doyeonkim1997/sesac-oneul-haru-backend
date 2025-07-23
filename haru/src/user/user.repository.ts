@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/databases/prisma/prisma.service';
 import { FindUserDto } from './dto/find-user-dto';
+import { FriendRequestStatus } from './enum/friend-request-status.enum';
+import { FindFriendDto } from './dto/find-friend-dto';
 
 @Injectable()
 export class UserRepository {
@@ -24,5 +26,34 @@ export class UserRepository {
     });
 
     return user;
+  }
+
+  // 사용자 id로 친구 목록 조회
+  async findFriendsByUserId(userId: number): Promise<FindFriendDto[]> {
+    const results = await this.prisma.friendRequest.findMany({
+      where: {
+        status: FriendRequestStatus.ACCEPT,
+        OR: [{ requesterId: userId }, { receiverId: userId }],
+      },
+      include: {
+        requester: {
+          select: { userId: true, nickName: true, tier: true },
+        },
+        receiver: {
+          select: { userId: true, nickName: true, tier: true },
+        },
+      },
+    });
+
+    // 요청자/수락자 중 userId가 아닌 쪽을 친구로 반환
+    const friends = results.map((req) => {
+      if (req.requesterId === userId) {
+        return req.receiver;
+      } else {
+        return req.requester;
+      }
+    });
+
+    return friends;
   }
 }
