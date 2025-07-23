@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId       Int       @id @default(autoincrement())
+  nickName     String
+  tier         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime?
+
+  // Relations
+  friendRequestsSent     FriendRequest[] @relation("Requester")
+  friendRequestsReceived FriendRequest[] @relation("Receiver")
+  image                 Image?          @relation(fields: [imageId], references: [imageId])
+  imageId               Int?            @unique
+  auths                  Auth[]
+  bookmarks              Bookmark[]
+  goals                  Goal[]
+}
+
+model FriendRequest {
+  requestId    Int      @id @default(autoincrement())
+  requesterId  Int
+  receiverId   Int
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+
+  // Relations
+  requester User @relation("Requester", fields: [requesterId], references: [userId], onDelete: Cascade)
+  receiver  User @relation("Receiver", fields: [receiverId], references: [userId], onDelete: Cascade)
+}
+
+model Image {
+  imageId   Int    @id @default(autoincrement())
+  imageUrl  String
+
+  // Relations
+  user User?
+}
+
+model Auth {
+  authId       Int      @id @default(autoincrement())
+  userId       Int
+  authType     String
+  identifier   String
+  passwordHash String?   @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, authType], name: "uq_user_auth")
+}
+
+model Bookmark {
+  bookmarkId   Int  @id @default(autoincrement())
+  userId       Int
+  goalId       Int
+  isBookmarked Boolean @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  goal Goal @relation(fields: [goalId], references: [goalId], onDelete: Cascade)
+}
+
+model Goal {
+  goalId      Int      @id @default(autoincrement())
+  userId      Int
+  title       String
+  content     String
+  category    String   @default("ETC")
+  isCompleted Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+  cheerCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime?
+
+  // Relations
+  bookmarks Bookmark[]
+  user      User?     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
