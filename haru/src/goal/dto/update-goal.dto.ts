@@ -1,10 +1,4 @@
-import { PickType } from '@nestjs/swagger';
-import { GoalEntity } from '../entity/goal.entity';
+import { PartialType } from '@nestjs/swagger';
+import { CreateGoalDto } from './create-goal.dto';
 
-export class UpdateGoalDto extends PickType(GoalEntity, [
-  'title',
-  'content',
-  'category',
-  'isCompleted',
-  'isDeleted',
-] as const) {}
+export class UpdateGoalDto extends PartialType(CreateGoalDto) {}

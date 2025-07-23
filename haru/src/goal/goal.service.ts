@@ -1,52 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { GoalRepository } from './goalRepository';
-import { Prisma, Goal } from '@prisma/client';
+import { CreateGoalDto } from './dto/create-goal.dto';
+import { UpdateGoalDto } from './dto/update-goal.dto';
 
 @Injectable()
 export class GoalService {
   constructor(private readonly goalRepository: GoalRepository) {}
 
-  // 목표 생성
-  async createGoal(data: Prisma.GoalCreateInput): Promise<Goal> {
-    return await this.goalRepository.createGoal(data);
+  async createGoal(createGoalDto: CreateGoalDto) {
+    return await this.goalRepository.createGoal(createGoalDto);
   }
 
-  // 특정 목표 조회
-  async getGoalById(goalId: number): Promise<Goal | null> {
-    const goal = await this.goalRepository.findById(goalId);
-    if (!goal) {
-      throw new Error(`Goal with ID ${goalId} not found`);
+  async getGoalsByUser(userId: number) {
+    return await this.goalRepository.findGoalsByUserId(userId);
+  }
+
+  async getGoalById(goalId: number) {
+    const goal = await this.goalRepository.findGoalById(goalId);
+    if (!goal || goal.isDeleted) {
+      throw new NotFoundException('Goal not found');
     }
     return goal;
   }
 
-  // 모든 목표 목록 조회
-  async getAllGoal(userId: number): Promise<Goal[]> {
-    return await this.goalRepository.findAll(userId);
-  }
-
-  // 목표 업데이트
-  async updateGoal(goalId: number, data: Prisma.GoalUpdateInput): Promise<Goal> {
+  async updateGoal(goalId: number, updateGoalDto: UpdateGoalDto) {
+    // 존재 및 삭제 여부 확인
     await this.getGoalById(goalId);
-    return this.goalRepository.updateGoal(goalId, data);
+    return await this.goalRepository.updateGoal(goalId, updateGoalDto);
   }
 
-  // 목표 소프트 삭제
-  async softDeleteGoal(goalId: number) {
-    const goal = await this.goalRepository.findById(goalId);
-    if (!goal) {
-      throw new Error(`Goal with ID ${goalId} not found`);
-    }
-    return await this.goalRepository.softDeleteGoal(goalId);
-  }
-
-  // 목표 삭제
   async deleteGoal(goalId: number) {
-    const goal = await this.goalRepository.findById(goalId);
-    if (!goal) {
-      throw new Error(`Goal with ID ${goalId} not found`);
-    }
+    // 존재 및 삭제 여부 확인
     await this.getGoalById(goalId);
-    return this.goalRepository.deleteGoal(goalId);
+    return await this.goalRepository.softDeleteGoal(goalId);
   }
 }

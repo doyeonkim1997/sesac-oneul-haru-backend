@@ -1,4 +1,4 @@
-import { GoalCategory } from './goal-category.enum';
+import { GoalCategory } from './enum/goal-category.enum';
 
 export interface Goal {
   goalId: number;
