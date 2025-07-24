@@ -10,7 +10,10 @@ datasource db {
 
 model User {
   userId       Int       @id @default(autoincrement())
-  nickName     String    @unique
+  nickName     String    
+  email        String
+  password     String
+  AuthType     String
   tier         String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime?
@@ -20,7 +23,7 @@ model User {
   friendRequestsReceived FriendRequest[] @relation("Receiver")
   image                 Image?          @relation(fields: [imageId], references: [imageId])
   imageId               Int?            @unique
-  auths                  Auth[]
+  // auths                  Auth[]
   bookmarks              Bookmark[]
   goals                  Goal[]
 }
@@ -45,18 +48,18 @@ model Image {
   user User?
 }
 
-model Auth {
-  authId       Int      @id @default(autoincrement())
-  userId       Int
-  authType     String
-  identifier   String
-  passwordHash String?   @map("password_hash")
-  createdAt    DateTime  @default(now()) @map("created_at")
+// model Auth {
+//   authId       Int      @id @default(autoincrement())
+//   userId       Int
+//   authType     String
+//   identifier   String
+//   passwordHash String?   @map("password_hash")
+//   createdAt    DateTime  @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+//   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@unique([userId, authType], name: "uq_user_auth")
-}
+//   @@unique([userId, authType], name: "uq_user_auth")
+// }
 
 model Bookmark {
   bookmarkId   Int  @id @default(autoincrement())
