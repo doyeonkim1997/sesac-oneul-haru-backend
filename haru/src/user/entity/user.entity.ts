@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class UserEntity {
   @ApiProperty({
@@ -21,6 +30,36 @@ export class UserEntity {
   @IsString()
   @IsNotEmpty()
   nickName: string;
+
+  @ApiProperty({
+    type: String,
+    description: '이메일',
+    example: 'example@example.com',
+    required: true,
+  })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({
+    type: String,
+    description: '해싱된 비밀번호',
+    example: 'asdkasjdkqwjekqlwj123j12ihqswkfalsk/',
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @ApiProperty({
+    type: String,
+    description: '가입 방식 (EMAIL, KAKAO, GOOGLE, NAVER)',
+    example: 'NAVER',
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  authType: string;
 
   @ApiProperty({
     type: String,
