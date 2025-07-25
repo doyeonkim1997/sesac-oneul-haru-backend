@@ -11,7 +11,7 @@ datasource db {
 model User {
   userId       Int       @id @default(autoincrement())
   nickName     String    
-  email        String
+  email        String    @unique
   password     String
   AuthType     String
   tier         String
@@ -26,6 +26,15 @@ model User {
   // auths                  Auth[]
   bookmarks              Bookmark[]
   goals                  Goal[]
+}
+
+model EmailVerification {
+  emailId             Int      @id @default(autoincrement())
+  email          String   
+  validCode      String
+  expirationTime DateTime?
+  // isVerified     Boolean  @default(false)
+  createdAt      DateTime @default(now())
 }
 
 model FriendRequest {

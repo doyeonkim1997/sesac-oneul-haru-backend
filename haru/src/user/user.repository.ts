@@ -14,6 +14,7 @@ export class UserRepository {
       select: {
         userId: true,
         nickName: true,
+        email: true,
         tier: true,
         createdAt: true,
         updatedAt: true,
