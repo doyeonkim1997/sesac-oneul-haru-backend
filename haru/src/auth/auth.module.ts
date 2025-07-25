@@ -6,10 +6,11 @@ import { UserModule } from 'src/user/user.module';
 import { KakaoStrategy } from './strategies/kakao-strategy';
 import { AuthRepository } from './auth.repository';
 import { GoogleStrategy } from './strategies/google-strategy';
+import { NaverStrategy } from './strategies/naver-strategy';
 
 @Module({
   imports: [JwtModule.register({}), UserModule],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository, KakaoStrategy, GoogleStrategy],
+  providers: [AuthService, AuthRepository, KakaoStrategy, GoogleStrategy, NaverStrategy],
 })
 export class AuthModule {}
