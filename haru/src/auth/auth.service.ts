@@ -24,16 +24,7 @@ export class AuthService {
     let user = await this.authRepository.findByEmail({ email });
 
     // 가입된 유저가 아니면 회원가입
-    if (!user) {
-      // 비밀번호 해싱해서 저장
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      user = await this.authRepository.createUser({
-        createUserDto: { email, hashedPassword, nickName },
-        authType: AuthType.KAKAO, // kakao로 회원가입
-      });
-    }
+    user = await this.signUp(user, password, email, nickName, AuthType.KAKAO);
 
     // accessToken 생성
     const accessToken = this.createAccessToken({ userId: user.userId });
@@ -51,16 +42,7 @@ export class AuthService {
     let user = await this.authRepository.findByEmail({ email });
 
     // 가입된 유저가 아니면 회원가입
-    if (!user) {
-      // 비밀번호 해싱해서 저장
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      user = await this.authRepository.createUser({
-        createUserDto: { email, hashedPassword, nickName },
-        authType: AuthType.GOOGLE, // google로 회원가입
-      });
-    }
+    user = await this.signUp(user, password, email, nickName, AuthType.GOOGLE);
 
     const accessToken = this.createAccessToken({ userId: user.userId });
 
@@ -75,6 +57,30 @@ export class AuthService {
     let user = await this.authRepository.findByEmail({ email });
 
     // 가입된 유저가 아니면 회원가입
+    user = await this.signUp(user, password, email, nickName, AuthType.NAVER);
+
+    const accessToken = this.createAccessToken({ userId: user.userId });
+
+    return { accessToken };
+  }
+
+  private async signUp(
+    user: {
+      email: string;
+      password: string;
+      nickName: string;
+      userId: number;
+      AuthType: string;
+      tier: string;
+      createdAt: Date;
+      updatedAt: Date | null;
+      imageId: number | null;
+    } | null,
+    password: string,
+    email: string,
+    nickName: string,
+    authType: AuthType,
+  ) {
     if (!user) {
       // 비밀번호 해싱해서 저장
       const salt = await bcrypt.genSalt();
@@ -82,13 +88,10 @@ export class AuthService {
 
       user = await this.authRepository.createUser({
         createUserDto: { email, hashedPassword, nickName },
-        authType: AuthType.NAVER, // naver로 회원가입
+        authType, // 해당 인증 타입으로 회원가입
       });
     }
-
-    const accessToken = this.createAccessToken({ userId: user.userId });
-
-    return { accessToken };
+    return user;
   }
 
   // accessToken 생성 1시간
