@@ -1,4 +1,3 @@
-// @ts-check
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
@@ -31,13 +30,13 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       '@typescript-eslint/no-misused-promises': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
-      
-       // 🔷 여기부터 추가
-      'linebreak-style': [
-        'error',
-        os.EOL === '\r\n' ? 'windows' : 'unix',
-      ],
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+
+      'linebreak-style': ['error', os.EOL === '\r\n' ? 'windows' : 'unix'],
       'prettier/prettier': [
         'error',
         {
