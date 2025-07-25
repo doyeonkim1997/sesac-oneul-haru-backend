@@ -67,6 +67,30 @@ export class AuthService {
     return { accessToken };
   }
 
+  // 네이버 로그인
+  async naverLogin({
+    socialLoginDto,
+  }: IAuthServiceSocialLoginInput): Promise<IAuthServiceSocialLoginOutput> {
+    const { email, password, nickName } = socialLoginDto;
+    let user = await this.authRepository.findByEmail({ email });
+
+    // 가입된 유저가 아니면 회원가입
+    if (!user) {
+      // 비밀번호 해싱해서 저장
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      user = await this.authRepository.createUser({
+        createUserDto: { email, hashedPassword, nickName },
+        authType: AuthType.NAVER, // naver로 회원가입
+      });
+    }
+
+    const accessToken = this.createAccessToken({ userId: user.userId });
+
+    return { accessToken };
+  }
+
   // accessToken 생성 1시간
   private createAccessToken(payload: { userId: number }): string {
     return this.jwtService.sign(payload, {
