@@ -30,13 +30,13 @@ model User {
 
 model FriendRequest {
   requestId    Int      @id @default(autoincrement())
-  requesterId  Int
+  userId  Int @map("requesterId")
   receiverId   Int
   status       String   @default("PENDING")
   createdAt    DateTime @default(now())
 
   // Relations
-  requester User @relation("Requester", fields: [requesterId], references: [userId], onDelete: Cascade)
+  user User @relation("Requester",fields: [userId], references: [userId], onDelete: Cascade)
   receiver  User @relation("Receiver", fields: [receiverId], references: [userId], onDelete: Cascade)
 }
 
