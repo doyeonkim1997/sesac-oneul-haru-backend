@@ -33,10 +33,10 @@ export class UserRepository {
     const results = await this.prisma.friendRequest.findMany({
       where: {
         status: FriendRequestStatus.ACCEPT,
-        OR: [{ requesterId: userId }, { receiverId: userId }],
+        OR: [{ userId: userId }, { receiverId: userId }],
       },
       include: {
-        requester: {
+        user: {
           select: { userId: true, nickName: true, tier: true },
         },
         receiver: {
@@ -47,10 +47,10 @@ export class UserRepository {
 
     // 요청자/수락자 중 userId가 아닌 쪽을 친구로 반환
     const friends = results.map((req) => {
-      if (req.requesterId === userId) {
+      if (req.userId === userId) {
         return req.receiver;
       } else {
-        return req.requester;
+        return req.user;
       }
     });
 
