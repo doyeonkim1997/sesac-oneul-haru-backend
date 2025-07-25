@@ -64,6 +64,7 @@ export class AuthService {
     return { accessToken };
   }
 
+  // 회원가입
   private async signUp(
     user: {
       email: string;

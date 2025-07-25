@@ -10,3 +10,18 @@ export interface IAuthServiceSocialLoginOutput {
   accessToken: string;
   // refreshToken: string;
 }
+
+// 회원가입 시 매개변수
+export interface UserWithVerification {
+  email: string;
+  password: string;
+  nickName: string;
+  userId: number;
+  AuthType: string;
+  tier: string;
+  createdAt: Date;
+  updatedAt: Date | null;
+  imageId: number | null;
+  verificationCode: string | null;
+  expirationTime: Date | null;
+}
