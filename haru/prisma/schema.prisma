@@ -33,7 +33,7 @@ model EmailVerification {
   email          String   
   validCode      String
   expirationTime DateTime?
-  // isVerified     Boolean  @default(false)
+  isVerified     Boolean  @default(false)
   createdAt      DateTime @default(now())
 }
 
