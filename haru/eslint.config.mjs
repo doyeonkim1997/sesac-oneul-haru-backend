@@ -36,11 +36,11 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
 
-      'linebreak-style': ['error', os.EOL === '\r\n' ? 'windows' : 'unix'],
+      'linebreak-style': ['error', 'unix'],
       'prettier/prettier': [
         'error',
         {
-          endOfLine: 'auto',
+          endOfLine: 'lf',
         },
       ],
     },
