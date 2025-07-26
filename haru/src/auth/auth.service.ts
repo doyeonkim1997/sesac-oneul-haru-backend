@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import {
   IAuthServiceSocialLoginInput,
@@ -34,6 +34,10 @@ export class AuthService {
       return { accessToken };
     }
 
+    if (user.authType !== AuthType.KAKAO) {
+      throw new BadRequestException('이미 가입된 상태입니다.');
+    }
+
     // accessToken 생성
     const accessToken = this.createAccessToken({ email: user.email });
     // const refreshToken = this.getRefreshToken({ userId: user.userId });
@@ -56,6 +60,10 @@ export class AuthService {
       return { accessToken };
     }
 
+    if (user.authType !== AuthType.GOOGLE) {
+      throw new BadRequestException('이미 가입된 상태입니다.');
+    }
+
     const accessToken = this.createAccessToken({ email: user.email });
     // const refreshToken = this.getRefreshToken({ userId: user.userId });
 
@@ -74,6 +82,10 @@ export class AuthService {
       const createdUser = await this.signUp(password, email, nickName, AuthType.NAVER);
       const accessToken = this.createAccessToken({ email: createdUser.email });
       return { accessToken };
+    }
+
+    if (user.authType !== AuthType.NAVER) {
+      throw new BadRequestException('이미 가입된 상태입니다.');
     }
 
     const accessToken = this.createAccessToken({ email: user.email });
@@ -101,6 +113,12 @@ export class AuthService {
   // 회원가입 (이메일)
   async EmailSignUp(emailSignUpDto: EmailSignUpDto, authType: AuthType): Promise<boolean> {
     const { email, password, confirmPassword, nickName } = emailSignUpDto;
+
+    const user = await this.authRepository.findByEmail({ email });
+
+    if (user) {
+      throw new BadRequestException('이미 가입된 상태입니다.');
+    }
 
     // 비밀번호 일치하는지 확인
     if (password !== confirmPassword) {
