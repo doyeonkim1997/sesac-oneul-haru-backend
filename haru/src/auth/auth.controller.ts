@@ -9,6 +9,7 @@ import { GoogleAuthGuard } from './guards/google-auth-guard';
 import { KakaoAuthGuard } from './guards/kakao-auth-guard';
 import { NaverAuthGuard } from './guards/naver-auth-guard';
 import { SocialUser, SocialUserAfterAuth } from './user.decorator';
+import { EmailCheckDto } from './dto/email-check-dto';
 
 @Controller('auth')
 export class AuthController {
@@ -109,5 +110,14 @@ export class AuthController {
     }
 
     res.status(400).send('회원가입 실패');
+  }
+
+  @ApiOperation({
+    summary: '이메일 중복확인',
+    description: '중복확인 버튼을 통해 중복되면 false 반환',
+  })
+  @Post('check/email')
+  async isEmailExists(@Body() emailCheckDto: EmailCheckDto): Promise<boolean> {
+    return await this.authService.isEmailExists(emailCheckDto);
   }
 }

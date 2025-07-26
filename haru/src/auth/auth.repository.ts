@@ -28,7 +28,7 @@ export class AuthRepository {
         email,
         password: hashedPassword,
         nickName: nickName,
-        AuthType: authType,
+        authType: authType,
         tier: Tier.BRONZE,
       },
     });
