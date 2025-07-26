@@ -40,6 +40,17 @@ export class MailRepository {
     });
   }
 
+  // 소셜 로그인 시 이메일 저장
+  async createSocialEmail(email: string): Promise<void> {
+    await this.prisma.emailVerification.create({
+      data: {
+        email: email,
+        validCode: 'social',
+        expirationTime: new Date(),
+      },
+    });
+  }
+
   // 이메일 인증 시 이메일 인증 상태 통과로 변경
   async updateEmailVerified(emailId: number): Promise<void> {
     await this.prisma.emailVerification.update({
