@@ -1,8 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { VerifyDto } from './dto/verify-dto';
 import { MailService } from './mail.service';
+import { SendMailDto } from './dto/send-mail-dto';
 
+@UsePipes(ValidationPipe)
 @Controller('mail')
 export class MailController {
   constructor(private readonly mailService: MailService) {}
@@ -15,7 +17,7 @@ export class MailController {
     type: String,
   })
   @Post('/send')
-  async sendMail(@Body('email') email: string): Promise<string> {
+  async sendMail(@Body('email') email: SendMailDto): Promise<string> {
     await this.mailService.sendEmail(email);
     return '인증 메일을 발송했습니다.';
   }
