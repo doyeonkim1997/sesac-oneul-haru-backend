@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { EmailLoginDto } from './dto/email-login-dto';
 import { MailRepository } from 'src/mail/mail.repository';
 import { EmailSignUpDto } from './dto/email-signup-dto';
+import { EmailCheckDto } from './dto/email-check-dto';
 
 @Injectable()
 export class AuthService {
@@ -143,6 +144,18 @@ export class AuthService {
       createUserDto: { email, hashedPassword, nickName },
       authType, // 해당 인증 타입으로 회원가입
     });
+
+    return true;
+  }
+
+  // 이메일 중복 확인
+  async isEmailExists(emailCheckDto: EmailCheckDto): Promise<boolean> {
+    const { email } = emailCheckDto;
+    const isValidEmail = await this.authRepository.findByEmail({ email });
+
+    if (isValidEmail) {
+      return false;
+    }
 
     return true;
   }
