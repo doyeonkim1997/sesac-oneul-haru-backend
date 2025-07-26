@@ -40,6 +40,18 @@ export class MailRepository {
     });
   }
 
+  // 이메일 인증 시 이메일 인증 상태 통과로 변경
+  async updateEmailVerified(emailId: number): Promise<void> {
+    await this.prisma.emailVerification.update({
+      where: {
+        emailId,
+      },
+      data: {
+        isVerified: true,
+      },
+    });
+  }
+
   // 검증 후 삭제용
   async deleteEmailById(emailId: number): Promise<void> {
     await this.prisma.emailVerification.delete({

@@ -2,6 +2,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { MailRepository } from './mail.repository';
+import { SendMailDto } from './dto/send-mail-dto';
 
 @Injectable()
 export class MailService {
@@ -11,15 +12,8 @@ export class MailService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async sendEmail(email: string): Promise<void> {
-    // 이미 존재하는 이메일이어도 코드는 여러번 받을 수 있음
-    // const existingEmail = await this.mailRepository.existsByEmail(email);
-
-    // // 이메일 존재하는지 확인
-    // if (!existingEmail) {
-    //   throw new NotFoundException('존재하지 않는 이메일입니다.');
-    // }
-
+  async sendEmail(sendingEmail: SendMailDto): Promise<void> {
+    const { email } = sendingEmail;
     const tempCode = this.generateTempCode();
     const expirationTime = new Date();
 
@@ -89,7 +83,7 @@ export class MailService {
     }
 
     if (validEmail.validCode !== verificationCode) {
-      this.logger.log(`1. 인증 코드 불일치`);
+      this.logger.log(`1. 인증 코드 불일치ㄴ`);
       return false;
     }
 
@@ -100,8 +94,11 @@ export class MailService {
 
     this.logger.log(`✅ 인증 통과`);
 
+    // 이메일 인증 상태 변경
+    await this.mailRepository.updateEmailVerified(validEmail.emailId);
+
     // 이메일 검증 후 컬럼 삭제
-    await this.mailRepository.deleteEmailById(validEmail.emailId);
+    // await this.mailRepository.deleteEmailById(validEmail.emailId);
 
     return true;
   }
