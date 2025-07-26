@@ -17,7 +17,7 @@ export class MailController {
     type: String,
   })
   @Post('/send')
-  async sendMail(@Body('email') email: SendMailDto): Promise<string> {
+  async sendMail(@Body() email: SendMailDto): Promise<string> {
     await this.mailService.sendEmail(email);
     return '인증 메일을 발송했습니다.';
   }

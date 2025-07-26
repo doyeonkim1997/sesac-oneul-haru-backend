@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class FindEmailDto {
   @ApiProperty({
@@ -8,7 +8,7 @@ export class FindEmailDto {
     example: '1',
     required: true,
   })
-  @IsEmail()
+  @IsInt()
   @IsNotEmpty()
   emailId: number;
 

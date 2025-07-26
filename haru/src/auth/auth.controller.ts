@@ -1,11 +1,14 @@
-import { Controller, Get, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
+import { EmailLoginDto } from './dto/email-login-dto';
+import { EmailSignUpDto } from './dto/email-signup-dto';
+import { AuthType } from './enum/auth-type';
 import { GoogleAuthGuard } from './guards/google-auth-guard';
 import { KakaoAuthGuard } from './guards/kakao-auth-guard';
-import { SocialUser, SocialUserAfterAuth } from './user.decorator';
 import { NaverAuthGuard } from './guards/naver-auth-guard';
+import { SocialUser, SocialUserAfterAuth } from './user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -21,7 +24,7 @@ export class AuthController {
   async kakaoLogin(
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<any> {
+  ): Promise<void> {
     const { accessToken } = await this.authService.kakaoLogin({
       socialLoginDto: socialUser,
     });
@@ -53,7 +56,7 @@ export class AuthController {
   async googleCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<void> {
     const { accessToken } = await this.authService.googleLogin({
       socialLoginDto: socialUser,
     });
@@ -73,7 +76,7 @@ export class AuthController {
   async naverCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<void> {
     const { accessToken } = await this.authService.naverLogin({
       socialLoginDto: socialUser,
     });
@@ -81,5 +84,30 @@ export class AuthController {
     res.cookie('accessToken', accessToken);
 
     res.redirect('/');
+  }
+
+  @ApiOperation({
+    summary: '이메일 로그인',
+    description: '이메일과 비밀번호를 통해 로그인',
+  })
+  @Post('login/email')
+  async emailLogin(@Body() emailLoginDto: EmailLoginDto): Promise<{ accessToken: string }> {
+    return await this.authService.emailLogin(emailLoginDto);
+  }
+
+  @ApiOperation({
+    summary: '이메일 회원가입',
+    description: '회원가입 버튼을 누를 시 동작하는 이메일 회원가입',
+  })
+  @Post('signup/email')
+  async emailSignUp(@Body() emailSignUpDto: EmailSignUpDto, @Res() res: Response): Promise<void> {
+    const isSignUpSuccess = await this.authService.EmailSignUp(emailSignUpDto, AuthType.EMAIL);
+
+    // 회원가입 성공 시 메인 페이지(로그인 페이지)로 이동 후 true 반환
+    if (isSignUpSuccess) {
+      return res.redirect('/');
+    }
+
+    res.status(400).send('회원가입 실패');
   }
 }
