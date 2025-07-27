@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  
 }
 
 datasource db {
@@ -10,11 +9,11 @@ datasource db {
 
 model User {
   userId       Int       @id @default(autoincrement())
-  nickName     String    
+  nickName     String
   email        String    @unique
   password     String
   refreshToken String?
-  authType     String @map("authType")
+  authType     String    @map("authType")
   tier         String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime?
@@ -22,37 +21,37 @@ model User {
   // Relations
   friendRequestsSent     FriendRequest[] @relation("Requester")
   friendRequestsReceived FriendRequest[] @relation("Receiver")
-  image                 Image?          @relation(fields: [imageId], references: [imageId])
-  imageId               Int?            @unique
+  image                  Image?          @relation(fields: [imageId], references: [imageId])
+  imageId                Int?            @unique
   // auths                  Auth[]
   bookmarks              Bookmark[]
   goals                  Goal[]
 }
 
 model EmailVerification {
-  emailId             Int      @id @default(autoincrement())
-  email          String   
+  emailId        Int       @id @default(autoincrement())
+  email          String
   validCode      String
   expirationTime DateTime?
-  isVerified     Boolean  @default(false)
-  createdAt      DateTime @default(now())
+  isVerified     Boolean   @default(false)
+  createdAt      DateTime  @default(now())
 }
 
 model FriendRequest {
-  requestId    Int      @id @default(autoincrement())
-  userId  Int @map("requesterId")
-  receiverId   Int
-  status       String   @default("PENDING")
-  createdAt    DateTime @default(now())
+  requestId  Int      @id @default(autoincrement())
+  userId     Int      @map("requesterId")
+  receiverId Int
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
 
   // Relations
-  user User @relation("Requester",fields: [userId], references: [userId], onDelete: Cascade)
-  receiver  User @relation("Receiver", fields: [receiverId], references: [userId], onDelete: Cascade)
+  user     User @relation("Requester", fields: [userId], references: [userId], onDelete: Cascade)
+  receiver User @relation("Receiver", fields: [receiverId], references: [userId], onDelete: Cascade)
 }
 
 model Image {
-  imageId   Int    @id @default(autoincrement())
-  imageUrl  String
+  imageId  Int    @id @default(autoincrement())
+  imageUrl String
 
   // Relations
   user User?
@@ -72,7 +71,7 @@ model Image {
 // }
 
 model Bookmark {
-  bookmarkId   Int  @id @default(autoincrement())
+  bookmarkId   Int     @id @default(autoincrement())
   userId       Int
   goalId       Int
   isBookmarked Boolean @default(false)
@@ -80,21 +79,23 @@ model Bookmark {
   // Relations
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
   goal Goal @relation(fields: [goalId], references: [goalId], onDelete: Cascade)
+
+  @@unique([userId, goalId])
 }
 
 model Goal {
-  goalId      Int      @id @default(autoincrement())
+  goalId      Int       @id @default(autoincrement())
   userId      Int
   title       String
   content     String
-  category    String   @default("ETC")
-  isCompleted Boolean  @default(false)
-  isDeleted   Boolean  @default(false)
-  cheerCount  Int      @default(0)
-  createdAt   DateTime @default(now())
+  category    String    @default("ETC")
+  isCompleted Boolean   @default(false)
+  isDeleted   Boolean   @default(false)
+  cheerCount  Int       @default(0)
+  createdAt   DateTime  @default(now())
   updatedAt   DateTime?
 
   // Relations
   bookmarks Bookmark[]
-  user      User?     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }

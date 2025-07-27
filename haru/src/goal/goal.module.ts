@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GoalService } from './goal.service';
-import { GoalRepository } from './goalRepository';
+import { GoalRepository } from './goal.repository';
 import { GoalController } from './goal.controller';
 import { PrismaService } from 'src/databases/prisma/prisma.service';
 @Module({

@@ -1,30 +1,46 @@
-import { Controller, Get, Post, Delete } from '@nestjs/common';
-import { BookmarksService } from './bookmarks.service';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { BookmarkService } from './bookmarks.service';
+import { CreateBookmarkDto } from './dto/create-bookmark.dto';
+import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 
 @Controller('bookmarks')
-export class BookmarksController {
-  constructor(private readonly bookmarksService: BookmarksService) {}
+export class BookmarkController {
+  constructor(private readonly bookmarkService: BookmarkService) {}
 
-  // 유저의 북마크 조회
-  @Get('check')
-  async getBookmarksByUserId(userId: number) {
-    return this.bookmarksService.getBookmarksByUserId(userId);
-  }
-
-  // 북마크 추가
   @Post()
-  async addBookmark(userId: number, goalId: number) {
-    return this.bookmarksService.addBookmark(userId, goalId);
+  create(@Body() dto: CreateBookmarkDto) {
+    return this.bookmarkService.createBookmark(dto);
   }
 
-  // 북마크 삭제
-  @Delete()
-  async deleteBookmark(userId: number, goalId: number) {
-    return this.bookmarksService.deleteBookmark(userId, goalId);
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.bookmarkService.findById(id);
   }
 
-  // 북마크 존재 여부 확인
-  async checkBookmark(userId: number, goalId: number) {
-    return this.bookmarksService.checkBookmark(userId, goalId);
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateBookmarkDto,
+  ) {
+    return this.bookmarkService.updateBookmark(id, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.bookmarkService.deleteBookmark(id);
+  }
+
+  @Get('user/:userId')
+  findAllByUser(@Param('userId', ParseIntPipe) userId: number) {
+    return this.bookmarkService.findAllByUser(userId);
   }
 }
