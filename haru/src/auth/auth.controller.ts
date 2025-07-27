@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -10,6 +10,7 @@ import { KakaoAuthGuard } from './guards/kakao-auth-guard';
 import { NaverAuthGuard } from './guards/naver-auth-guard';
 import { SocialUser, SocialUserAfterAuth } from './user.decorator';
 import { EmailCheckDto } from './dto/email-check-dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -119,5 +120,14 @@ export class AuthController {
   @Post('check/email')
   async isEmailExists(@Body() emailCheckDto: EmailCheckDto): Promise<boolean> {
     return await this.authService.isEmailExists(emailCheckDto);
+  }
+
+  // 인증/인가 테스트용 API
+  @Post('/test')
+  // 로그인된 사용자만 가능
+  @UseGuards(AuthGuard())
+  testJwt(@Req() req) {
+    console.log('req', req);
+    return '인증 통과';
   }
 }

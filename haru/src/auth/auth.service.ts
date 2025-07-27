@@ -35,7 +35,7 @@ export class AuthService {
       return { accessToken };
     }
 
-    if (user.authType !== AuthType.KAKAO) {
+    if (user.authType !== String(AuthType.KAKAO)) {
       throw new BadRequestException('이미 가입된 상태입니다.');
     }
 
@@ -61,7 +61,7 @@ export class AuthService {
       return { accessToken };
     }
 
-    if (user.authType !== AuthType.GOOGLE) {
+    if (user.authType !== String(AuthType.GOOGLE)) {
       throw new BadRequestException('이미 가입된 상태입니다.');
     }
 
@@ -85,7 +85,7 @@ export class AuthService {
       return { accessToken };
     }
 
-    if (user.authType !== AuthType.NAVER) {
+    if (user.authType !== String(AuthType.NAVER)) {
       throw new BadRequestException('이미 가입된 상태입니다.');
     }
 

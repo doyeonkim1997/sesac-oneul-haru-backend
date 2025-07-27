@@ -8,9 +8,15 @@ import { AuthRepository } from './auth.repository';
 import { GoogleStrategy } from './strategies/google-strategy';
 import { NaverStrategy } from './strategies/naver-strategy';
 import { MailRepository } from 'src/mail/mail.repository';
+import { JwtStrategy } from './strategies/jwt-strategy';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [JwtModule.register({}), UserModule],
+  imports: [
+    JwtModule.register({}),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    UserModule,
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,
@@ -19,6 +25,7 @@ import { MailRepository } from 'src/mail/mail.repository';
     KakaoStrategy,
     GoogleStrategy,
     NaverStrategy,
+    JwtStrategy,
   ],
 })
 export class AuthModule {}
