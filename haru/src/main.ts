@@ -2,9 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // 쿠키 설정
+  app.use(cookieParser());
 
   // 유효성 검사 전역으로 사용
   app.useGlobalPipes(
@@ -14,7 +17,7 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger 관련 세팅
+  // Swagger 관련 설정
   const options = new DocumentBuilder()
     .setTitle('Haru Project')
     .setDescription('Haru 프로젝트 API 문서')

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -11,9 +11,12 @@ import { NaverAuthGuard } from './guards/naver-auth-guard';
 import { SocialUser, SocialUserAfterAuth } from './user.decorator';
 import { EmailCheckDto } from './dto/email-check-dto';
 import { AuthGuard } from '@nestjs/passport';
+import { RefreshTokenDto } from './dto/refresh-token-dto';
+import { JwtRefreshGuard } from './guards/jwt-refresh-guard';
 
 @Controller('auth')
 export class AuthController {
+  private logger = new Logger('AuthController');
   constructor(private readonly authService: AuthService) {}
 
   // 카카오 로그인 창 이동 및 콜백
@@ -27,13 +30,16 @@ export class AuthController {
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    const { accessToken } = await this.authService.kakaoLogin({
+    const { accessToken, refreshToken } = await this.authService.kakaoLogin({
       socialLoginDto: socialUser,
     });
 
     // refreshToken과 accessToekn을 쿠키에 넣고 전달 후
-    // res.cookie('refreshToken', refreshToken);
-    res.cookie('accessToken', accessToken);
+    res.cookie('refreshToken', refreshToken, { httpOnly: true }); // xss 공격 보호
+    res.cookie('accessToken', accessToken, { httpOnly: true });
+
+    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`refreshToken 확인 : ${refreshToken}`);
 
     // 홈페이지로 이동(url 정해지지 않음)
     res.redirect('/');
@@ -59,11 +65,15 @@ export class AuthController {
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    const { accessToken } = await this.authService.googleLogin({
+    const { accessToken, refreshToken } = await this.authService.googleLogin({
       socialLoginDto: socialUser,
     });
 
-    res.cookie('accessToken', accessToken);
+    res.cookie('accessToken', accessToken, { httpOnly: true });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true });
+
+    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`refreshToken 확인 : ${refreshToken}`);
 
     res.redirect('/');
   }
@@ -79,11 +89,15 @@ export class AuthController {
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    const { accessToken } = await this.authService.naverLogin({
+    const { accessToken, refreshToken } = await this.authService.naverLogin({
       socialLoginDto: socialUser,
     });
 
-    res.cookie('accessToken', accessToken);
+    res.cookie('accessToken', accessToken, { httpOnly: true });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true });
+
+    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`refreshToken 확인 : ${refreshToken}`);
 
     res.redirect('/');
   }
@@ -93,8 +107,19 @@ export class AuthController {
     description: '이메일과 비밀번호를 통해 로그인',
   })
   @Post('login/email')
-  async emailLogin(@Body() emailLoginDto: EmailLoginDto): Promise<{ accessToken: string }> {
-    return await this.authService.emailLogin(emailLoginDto);
+  async emailLogin(
+    @Body() emailLoginDto: EmailLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const { accessToken, refreshToken } = await this.authService.emailLogin(emailLoginDto);
+
+    res.cookie('accessToken', accessToken, { httpOnly: true });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true });
+
+    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`refreshToken 확인 : ${refreshToken}`);
+
+    res.redirect('/');
   }
 
   @ApiOperation({
@@ -120,6 +145,41 @@ export class AuthController {
   @Post('check/email')
   async isEmailExists(@Body() emailCheckDto: EmailCheckDto): Promise<boolean> {
     return await this.authService.isEmailExists(emailCheckDto);
+  }
+
+  @ApiOperation({
+    summary: 'accessToken 재발급',
+    description: 'DB에 저장된 refreshToken으로 새로운 accessToken 발급',
+  })
+  @Post('/refresh')
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<string> {
+    const newAccessToken = await this.authService.refresh(refreshTokenDto);
+
+    res.cookie('accessToken', newAccessToken.accessToken, { httpOnly: true });
+
+    return `새로운 accessToken 발급 완료 : ${newAccessToken.accessToken}`;
+  }
+
+  @ApiOperation({
+    summary: '로그아웃',
+    description:
+      '로그아웃 버튼을 누르면 쿠키의 refreshToken과 accessToken이 삭제되고 DB에 있는 refreshToken도 null로 변경',
+  })
+  @Post('/logout')
+  @UseGuards(JwtRefreshGuard)
+  async logout(@Req() req: any, @Res() res: Response): Promise<any> {
+    this.logger.debug('로그아웃 컨트롤러 시작');
+    this.logger.debug(`${req.user.id} 확인`);
+    await this.authService.removeRefreshToken(req.user.userId);
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    this.logger.debug('로그아웃 컨트롤라 종료');
+    return res.send({
+      message: '로그아웃 성공!',
+    });
   }
 
   // 인증/인가 테스트용 API

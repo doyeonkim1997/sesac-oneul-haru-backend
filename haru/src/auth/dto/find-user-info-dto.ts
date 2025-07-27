@@ -1,21 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class FindUserInfoDto {
-  @ApiProperty({
-    type: String,
-    description: '이메일 정보',
-    example: 'example@example.com',
-    required: true,
-  })
-  email: string;
-
   @ApiProperty({
     type: Number,
     description: '유저id',
     example: '1',
     required: true,
   })
+  @IsInt()
   userId: number;
+
+  @ApiProperty({
+    type: String,
+    description: '이메일 정보',
+    example: 'example@example.com',
+    required: true,
+  })
+  @IsEmail()
+  email: string;
 
   @ApiProperty({
     type: String,
@@ -23,6 +26,7 @@ export class FindUserInfoDto {
     example: 'nickName',
     required: true,
   })
+  @IsString()
   nickName: string;
 
   @ApiProperty({
@@ -31,7 +35,18 @@ export class FindUserInfoDto {
     example: 'asdfasdf1234',
     required: true,
   })
+  @IsString()
+  @IsNotEmpty()
   password: string;
+
+  @ApiProperty({
+    type: String,
+    description: '해싱된 비밀번호',
+    example: 'asdkasjdkqwjekqlwj123j12ihqswkfalsk/',
+    required: false,
+  })
+  @IsString()
+  refreshToken: string | null;
 
   @ApiProperty({
     enum: String,
@@ -39,5 +54,7 @@ export class FindUserInfoDto {
     example: 'KAKAO',
     required: true,
   })
+  @IsString()
+  @IsNotEmpty()
   authType: string;
 }

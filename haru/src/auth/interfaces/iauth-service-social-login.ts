@@ -8,7 +8,7 @@ export interface IAuthServiceSocialLoginInput {
 // 소셜 로그인 시 반환될 dto
 export interface IAuthServiceSocialLoginOutput {
   accessToken: string;
-  // refreshToken: string;
+  refreshToken: string;
 }
 
 // 회원가입 시 매개변수

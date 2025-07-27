@@ -44,6 +44,15 @@ export class UserEntity {
 
   @ApiProperty({
     type: String,
+    description: 'accessToken 만료 시 재발급을 위한 refreshToken',
+    example: 'aksdjpqwrusjnvkahsfsk12ashfliuawh',
+    required: false,
+  })
+  @IsString()
+  refreshToken: string;
+
+  @ApiProperty({
+    type: String,
     description: '가입 방식 (EMAIL, KAKAO, GOOGLE, NAVER)',
     example: 'NAVER',
     required: true,
