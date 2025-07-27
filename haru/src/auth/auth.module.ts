@@ -10,6 +10,7 @@ import { NaverStrategy } from './strategies/naver-strategy';
 import { MailRepository } from 'src/mail/mail.repository';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { PassportModule } from '@nestjs/passport';
+import { RefreshStrategy } from './strategies/refresh-strategy';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PassportModule } from '@nestjs/passport';
     GoogleStrategy,
     NaverStrategy,
     JwtStrategy,
+    RefreshStrategy,
   ],
 })
 export class AuthModule {}

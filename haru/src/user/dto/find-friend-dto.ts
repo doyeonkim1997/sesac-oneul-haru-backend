@@ -7,4 +7,5 @@ export class FindFriendDto extends OmitType(UserEntity, [
   'email',
   'password',
   'authType',
+  'refreshToken',
 ] as const) {}
