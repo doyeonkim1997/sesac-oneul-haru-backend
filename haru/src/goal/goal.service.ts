@@ -3,6 +3,7 @@ import { GoalRepository } from './goal.repository';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
+import { FindGoalFilterDto } from './dto/find-goal-filter.dto';
 
 @Injectable()
 export class GoalService {
@@ -24,6 +25,12 @@ export class GoalService {
   async getAllGoals(userId: number): Promise<FindGoalDto[]> {
     return await this.goalRepository.getAllGoal(userId);
   }
+
+  // 필터링
+  async goalFilter(filerDto: FindGoalFilterDto): Promise<FindGoalDto[]> {
+    return await this.goalRepository.goalFilter(filerDto);
+  }
+
   // 목표 수정
   async updateGoal(goalId: number, updateGoalDto: UpdateGoalDto): Promise<UpdateGoalDto> {
     return await this.goalRepository.updateGoal(goalId, updateGoalDto);
