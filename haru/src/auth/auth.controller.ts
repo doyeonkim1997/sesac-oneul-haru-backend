@@ -1,18 +1,20 @@
 import { Body, Controller, Get, Logger, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
+import { UserEntity } from 'src/user/entity/user.entity';
+import { getUser } from 'src/user/get-user-decorator';
 import { AuthService } from './auth.service';
+import { EmailCheckDto } from './dto/email-check-dto';
 import { EmailLoginDto } from './dto/email-login-dto';
 import { EmailSignUpDto } from './dto/email-signup-dto';
+import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { AuthType } from './enum/auth-type';
 import { GoogleAuthGuard } from './guards/google-auth-guard';
+import { JwtRefreshGuard } from './guards/jwt-refresh-guard';
 import { KakaoAuthGuard } from './guards/kakao-auth-guard';
 import { NaverAuthGuard } from './guards/naver-auth-guard';
 import { SocialUser, SocialUserAfterAuth } from './user.decorator';
-import { EmailCheckDto } from './dto/email-check-dto';
-import { AuthGuard } from '@nestjs/passport';
-import { RefreshTokenDto } from './dto/refresh-token-dto';
-import { JwtRefreshGuard } from './guards/jwt-refresh-guard';
 
 @Controller('auth')
 export class AuthController {
@@ -29,20 +31,19 @@ export class AuthController {
   async kakaoLogin(
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
+  ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.authService.kakaoLogin({
       socialLoginDto: socialUser,
     });
 
     // refreshToken과 accessToekn을 쿠키에 넣고 전달 후
     res.cookie('refreshToken', refreshToken, { httpOnly: true }); // xss 공격 보호
-    res.cookie('accessToken', accessToken, { httpOnly: true });
+    // res.cookie('accessToken', accessToken, { httpOnly: true });
 
     console.log(`acessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    // 홈페이지로 이동(url 정해지지 않음)
-    res.redirect('/');
+    return { accessToken };
   }
 
   // 구글 로그인 창 이동
@@ -64,18 +65,18 @@ export class AuthController {
   async googleCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
+  ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.authService.googleLogin({
       socialLoginDto: socialUser,
     });
 
-    res.cookie('accessToken', accessToken, { httpOnly: true });
+    // res.cookie('accessToken', accessToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
     console.log(`acessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    res.redirect('/');
+    return { accessToken };
   }
 
   // 네이버 로그인 창 이동 및 콜백
@@ -88,18 +89,18 @@ export class AuthController {
   async naverCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
+  ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.authService.naverLogin({
       socialLoginDto: socialUser,
     });
 
-    res.cookie('accessToken', accessToken, { httpOnly: true });
+    // res.cookie('accessToken', accessToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
     console.log(`acessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    res.redirect('/');
+    return { accessToken };
   }
 
   @ApiOperation({
@@ -110,16 +111,16 @@ export class AuthController {
   async emailLogin(
     @Body() emailLoginDto: EmailLoginDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<void> {
+  ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.authService.emailLogin(emailLoginDto);
 
-    res.cookie('accessToken', accessToken, { httpOnly: true });
+    // res.cookie('accessToken', accessToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
     console.log(`acessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    res.redirect('/');
+    return { accessToken };
   }
 
   @ApiOperation({
@@ -154,13 +155,13 @@ export class AuthController {
   @Post('/refresh')
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<string> {
+    // @Res({ passthrough: true }) res: Response,
+  ): Promise<{ accessToken: string }> {
     const newAccessToken = await this.authService.refresh(refreshTokenDto);
 
-    res.cookie('accessToken', newAccessToken.accessToken, { httpOnly: true });
+    // res.cookie('accessToken', newAccessToken.accessToken, { httpOnly: true });
 
-    return `새로운 accessToken 발급 완료 : ${newAccessToken.accessToken}`;
+    return { accessToken: newAccessToken.accessToken };
   }
 
   @ApiOperation({
@@ -174,7 +175,7 @@ export class AuthController {
     this.logger.debug('로그아웃 컨트롤러 시작');
     this.logger.debug(`${req.user.id} 확인`);
     await this.authService.removeRefreshToken(req.user.userId);
-    res.clearCookie('accessToken');
+    // res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     this.logger.debug('로그아웃 컨트롤라 종료');
     return res.send({
@@ -183,11 +184,11 @@ export class AuthController {
   }
 
   // 인증/인가 테스트용 API
-  @Post('/test')
+  @Get('/test')
   // 로그인된 사용자만 가능
-  @UseGuards(AuthGuard())
-  testJwt(@Req() req) {
-    console.log('req', req);
+  @UseGuards(AuthGuard('jwt'))
+  testJwt(@getUser() user: UserEntity) {
+    console.log('user', user);
     return '인증 통과';
   }
 }

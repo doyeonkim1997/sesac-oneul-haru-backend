@@ -34,7 +34,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
       throw new UnauthorizedException('Refresh Token이 존재하지 않습니다.');
     }
 
-    const user = await this.authService.getUserIfRefreshTokenMatchs(refreshToken, payload.userId);
+    const user = await this.authService.getUserIfRefreshTokenMatches(refreshToken, payload.userId);
 
     if (!user) {
       this.logger.warn('Refresh Token이 유효하지 않거나 사용자와 매칭되지 않습니다.');
