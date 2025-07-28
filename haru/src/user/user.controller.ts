@@ -1,8 +1,11 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindUserDto } from './dto/find-user-dto';
 import { UserService } from './user.service';
 import { FindFriendDto } from './dto/find-friend-dto';
+import { AuthGuard } from '@nestjs/passport';
+import { getUser } from './get-user-decorator';
+import { UserEntity } from './entity/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -32,5 +35,12 @@ export class UserController {
   @Get('/:id/friends')
   findFriendsByUserId(@Param('id', ParseIntPipe) id: number): Promise<FindFriendDto[]> {
     return this.findFriendsByUserId(id);
+  }
+
+  // 인증정보 불러오기 테스트용 API
+  @Get('/test')
+  @UseGuards(AuthGuard('jwt'))
+  testUser(@getUser() user: UserEntity) {
+    console.log(user);
   }
 }

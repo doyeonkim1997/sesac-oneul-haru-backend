@@ -201,7 +201,7 @@ export class AuthService {
 
     const userId = Number(decodedRefreshToken.userId);
 
-    const user = await this.getUserIfRefreshTokenMatchs(refreshToken, userId);
+    const user = await this.getUserIfRefreshTokenMatches(refreshToken, userId);
 
     if (!user) {
       throw new UnauthorizedException('accessToken을 생성할 수 없습니다.');
@@ -215,7 +215,7 @@ export class AuthService {
   }
 
   // refreshToken 유효성 검증
-  async getUserIfRefreshTokenMatchs(
+  async getUserIfRefreshTokenMatches(
     refreshToken: string,
     userId: number,
   ): Promise<FindUserInfoDto | null> {
@@ -257,20 +257,20 @@ export class AuthService {
     return user;
   }
 
-  // accessToken 생성 1시간
+  // accessToken
   private async createAccessToken(payload: { email: string }): Promise<string> {
     return this.jwtService.sign(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: '1h',
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRATION_TIME,
     });
   }
 
-  // refreshToken 생성 7일
+  // refreshToken
   // 유저 정보는 안 담는게 좋으므로 userId만 저장
   private async createRefreshToken(payload: { userId: number }): Promise<string> {
     return this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '7d',
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRATION_TIME,
     });
   }
 }
