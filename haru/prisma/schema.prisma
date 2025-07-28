@@ -15,6 +15,7 @@ model User {
   refreshToken String?   @map("refresh_token")
   authType     String    @map("auth_type")
   tier         String    @map("tier")
+  isDeleted    Boolean   @default(false)  @map("is_deleted")
   createdAt    DateTime  @default(now())  @map("created_at")
   updatedAt    DateTime? @map("updated_at")
 
