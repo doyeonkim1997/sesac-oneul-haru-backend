@@ -8,13 +8,18 @@ import {
   Body,
   ParseIntPipe,
   Query,
+  UseGuards,
+  Request,
+  NotFoundException,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { GoalService } from './goal.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindGoalDto } from './dto/find-goal.dto';
 import { FindGoalFilterDto } from './dto/find-goal-filter.dto';
+
 @ApiTags('Goal')
 @Controller('goals')
 export class GoalController {
@@ -22,14 +27,12 @@ export class GoalController {
 
   // 목표 생성
   @Post()
-  @ApiOperation({ summary: '목표 생성', description: '사용자 ID를 통해 목표를 생성합니다.' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '목표 생성', description: '로그인된 사용자만 목표를 생성합니다.' })
   @ApiResponse({ status: 201, description: '목표 생성 성공', type: CreateGoalDto })
-  async create(
-    @Body() createGoalDto: CreateGoalDto,
-    @Query('userId', ParseIntPipe) userId: number,
-  ) {
-    const dtoWithUser = { ...createGoalDto, userId };
-    return await this.goalService.createGoal(dtoWithUser);
+  async create(@Body() createGoalDto: CreateGoalDto, @Request() req) {
+    const userId = req.user.userId;
+    return await this.goalService.createGoal(createGoalDto, userId);
   }
 
   // 사용자 특정 목표 조회
@@ -41,7 +44,7 @@ export class GoalController {
   @ApiResponse({ status: 200, description: '목표 조회 성공', type: FindGoalDto })
   async findOne(
     @Param('goalId', ParseIntPipe) goalId: number,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Query('userId', ParseIntPipe) userId: number, // 이 부분은 인증을 강화하면 req.user.userId로 대체될 수 있습니다.
   ): Promise<FindGoalDto> {
     return await this.goalService.getGoalById(goalId, userId);
   }
@@ -59,35 +62,43 @@ export class GoalController {
   @ApiOperation({ summary: '목표 목록 필터링' })
   @ApiResponse({ status: 200, description: '전체/완료/미완료', type: [FindGoalDto] })
   async getFilteredGoals(
-    @Query('userId') userId: number,
+    @Query('userId', ParseIntPipe) userId: number,
     @Query('status') status: 'all' | 'true' | 'false' = 'all',
   ) {
     const filterDto: FindGoalFilterDto = {
       userId,
-      isCompleted: status === 'all' ? 'all' : status === 'true',
+      isCompleted: status === 'true' ? true : status === 'false' ? false : 'all',
     };
     return this.goalService.goalFilter(filterDto);
   }
 
   // 사용자 목표 수정
   @Patch(':goalId')
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: '목표 수정' })
   @ApiResponse({ status: 200, description: '목표 수정 성공', type: UpdateGoalDto })
   async update(
     @Param('goalId', ParseIntPipe) goalId: number,
     @Body() updateGoalDto: UpdateGoalDto,
+    @Request() req,
   ) {
-    return await this.goalService.updateGoal(goalId, updateGoalDto);
+    const userId = req.user.userId;
+
+    const goal = await this.goalService.getGoalById(goalId, userId);
+    if (!goal) throw new NotFoundException('수정 권한이 없는 목표입니다.');
+    return await this.goalService.updateGoal(goalId, updateGoalDto, userId);
   }
 
   // 삭제(소프트 딜리트)
   @Delete(':goalId')
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: '목표 삭제 (소프트 딜리트)' })
   @ApiResponse({ status: 200, description: '목표 삭제 성공' })
   async remove(
     @Param('goalId', ParseIntPipe) goalId: number,
-    @Query('userId', ParseIntPipe) userId: number,
+    @Query('userId', ParseIntPipe) userId: number, // 이 부분은 인증을 강화하면 req.user.userId로 대체될 수 있습니다.
   ) {
-    return await this.goalService.deleteGoal(goalId, userId);
+    await this.goalService.deleteGoal(goalId, userId);
+    return { message: '목표가 성공적으로 삭제되었습니다.' };
   }
 }

@@ -99,7 +99,6 @@ export class BookmarksRepository {
         isBookmarked: true,
         goal: {
           select: {
-            title: true,
             content: true,
             category: true,
             isCompleted: true,

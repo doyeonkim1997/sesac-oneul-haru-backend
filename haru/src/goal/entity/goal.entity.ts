@@ -23,16 +23,6 @@ export class GoalEntity {
 
   @ApiProperty({
     type: String,
-    description: '제목',
-    example: '운동하기',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsString()
-  title: string;
-
-  @ApiProperty({
-    type: String,
     description: '내용',
     example: '매일 30분 운동하기',
     required: true,

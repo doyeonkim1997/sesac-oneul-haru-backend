@@ -87,7 +87,6 @@ model Bookmark {
 model Goal {
   goalId      Int       @id @default(autoincrement()) @map("goal_id")
   userId      Int       @map("user_id")
-  title       String    @map("title")
   content     String    @map("content")
   category    String    @default("ETC") @map("category")
   isCompleted Boolean   @default(false) @map("is_completed")
