@@ -10,11 +10,12 @@ export class GoalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // 목표 생성
-  async createGoal(createGoalDto: CreateGoalDto): Promise<CreateGoalDto | null> {
+  async createGoal(createGoalDto: CreateGoalDto, userId: number): Promise<CreateGoalDto | null> {
     return await this.prisma.goal.create({
       data: {
-        title: createGoalDto.title,
-        content: createGoalDto.content,
+        userId: userId,
+        // title: createGoalDto.title, // title 필드 제거
+        content: createGoalDto.content, // content는 그대로 사용
         category: createGoalDto.category,
       },
     });
@@ -27,7 +28,7 @@ export class GoalRepository {
     });
   }
 
-  // 내 목표 조회
+  // 내 목표 전체 조회
   async getAllGoal(userId: number): Promise<FindGoalDto[]> {
     return await this.prisma.goal.findMany({
       where: { userId: userId, isDeleted: false },
@@ -40,15 +41,15 @@ export class GoalRepository {
     return await this.prisma.goal.update({
       where: { goalId: goalId },
       data: {
-        title: updateGoalDto.title,
-        content: updateGoalDto.content,
+        // title: updateGoalDto.title, // title 필드 제거
+        content: updateGoalDto.content, // content는 그대로 사용
         category: updateGoalDto.category,
         isCompleted: updateGoalDto.isCompleted,
       },
     });
   }
 
-  // 친구 목록
+  // 친구 목록 (변경 없음)
   async getFriendIds(userId: number): Promise<number[]> {
     const sent = await this.prisma.friendRequest.findMany({
       where: {
@@ -71,7 +72,7 @@ export class GoalRepository {
     return Array.from(new Set(freindIds));
   }
 
-  // 목표 필터링
+  // 목표 필터링 (변경 없음)
   async goalFilter(filerDto: FindGoalFilterDto): Promise<FindGoalDto[]> {
     const { userId, isCompleted } = filerDto;
 
@@ -96,7 +97,7 @@ export class GoalRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
-  // 목표 삭제 (소프트 딜리트)
+  // 목표 삭제 (소프트 딜리트) (변경 없음)
   async deleteGoal(goalId: number, userId: number): Promise<boolean> {
     const goal = await this.prisma.goal.findFirst({
       where: { goalId, userId, isDeleted: false },
