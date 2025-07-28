@@ -5,7 +5,7 @@ import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 import { BookmarkResponseDto } from './dto/bookmark-response.dto';
 
 @Injectable()
-export class BookmarkService {
+export class BookmarksService {
   constructor(private readonly bookmarkRepository: BookmarksRepository) {}
 
   // 북마크 생성
@@ -33,7 +33,7 @@ export class BookmarkService {
     return this.bookmarkRepository.deleteBookmark(bookmarkId);
   }
 
-  // 친구와 목표에 해당하는 북마크 조회 
+  // 친구와 목표에 해당하는 북마크 조회
   async findByUserAndGoal(userId: number, goalId: number): Promise<BookmarkResponseDto | null> {
     return this.bookmarkRepository.findByUserAndGoal(userId, goalId);
   }

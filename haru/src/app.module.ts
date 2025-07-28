@@ -8,6 +8,14 @@ import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [ScheduleModule.forRoot(),PrismaModule, UserModule, GoalModule, AuthModule, BookmarksModule, MailModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    PrismaModule,
+    UserModule,
+    GoalModule,
+    AuthModule,
+    BookmarksModule,
+    MailModule,
+  ],
 })
 export class AppModule {}

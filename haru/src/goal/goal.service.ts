@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { GoalRepository } from './goalRepository';
+import { GoalRepository } from './goal.repository';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';

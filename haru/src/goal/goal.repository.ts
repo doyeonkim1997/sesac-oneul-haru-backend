@@ -6,13 +6,12 @@ import { FindGoalDto } from './dto/find-goal.dto';
 
 @Injectable()
 export class GoalRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   // 목표 생성
   async createGoal(createGoalDto: CreateGoalDto): Promise<CreateGoalDto | null> {
     return await this.prisma.goal.create({
       data: {
-        userId: createGoalDto.userId,
         title: createGoalDto.title,
         content: createGoalDto.content,
         category: createGoalDto.category,
@@ -23,11 +22,7 @@ export class GoalRepository {
   // 특정 사용자 목표 조회
   async getGoalById(goalId: number, userId: number): Promise<FindGoalDto | null> {
     return await this.prisma.goal.findFirst({
-      where: {
-        goalId: goalId,
-        userId: userId,
-        isDeleted: false
-      },
+      where: { goalId: goalId, userId: userId, isDeleted: false },
     });
   }
 
@@ -38,8 +33,6 @@ export class GoalRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
-
-  
 
   // 목표 수정
   async updateGoal(goalId: number, updateGoalDto: UpdateGoalDto): Promise<UpdateGoalDto> {
@@ -68,23 +61,5 @@ export class GoalRepository {
     });
 
     return true;
-  }
-
-  // 자정 목표 처리 기능
-  async markAsExpired(thresholdDate: Date): Promise<number> {
-    const result = await this.prisma.goal.updateMany({
-      where: {
-        isCompleted: false, 
-        isDeleted: false,   
-       // isExpired: false,   
-        createdAt: {
-            lt: thresholdDate 
-        },
-      },
-      data: {
-       // isExpired: true,
-      },
-    });
-    return result.count;
   }
 }
