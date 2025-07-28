@@ -87,6 +87,7 @@ export class BookmarksRepository {
     });
     return this.toDto(bookmark);
   }
+
   //  본인 북마크한 모든 목록 조회
   async findAllByUser(userId: number): Promise<BookmarkResponseDto[]> {
     const bookmarks = await this.prisma.bookmark.findMany({
