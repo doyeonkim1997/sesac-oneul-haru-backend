@@ -72,6 +72,24 @@ export class UserEntity {
   tier: string;
 
   @ApiProperty({
+    type: Number,
+    description: '이미지 테이블의 이미지id',
+    example: '2',
+    required: false,
+  })
+  @IsInt()
+  imageId: number | null;
+
+  @ApiProperty({
+    type: Boolean,
+    description: '회원 탈퇴 여부',
+    example: 'true',
+    required: true,
+  })
+  @IsInt()
+  isDeleted: boolean;
+
+  @ApiProperty({
     type: Date,
     description: '유저 생성일',
     example: '2021-02-12',

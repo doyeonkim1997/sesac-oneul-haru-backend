@@ -133,7 +133,7 @@ export class AuthController {
 
     // 회원가입 성공 시 메인 페이지(로그인 페이지)로 이동 후 true 반환
     if (isSignUpSuccess) {
-      return res.redirect('/');
+      res.status(200).send('회원가입 성공');
     }
 
     res.status(400).send('회원가입 실패');
