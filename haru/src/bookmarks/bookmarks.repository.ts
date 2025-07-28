@@ -38,7 +38,7 @@ export class BookmarksRepository {
     return this.toDto(bookmark);
   }
 
-  // 친구와 목표에 해당하는 북마크 조회 
+  // 친구와 목표에 해당하는 북마크 조회
   async findByUserAndGoal(userId: number, goalId: number): Promise<BookmarkResponseDto | null> {
     const bookmark = await this.prisma.bookmark.findFirst({
       where: {
@@ -59,7 +59,7 @@ export class BookmarksRepository {
   // 북마크 수정
   async updateBookmark(
     bookmarkId: number,
-    data: Partial<{ isBookmarked: boolean }>
+    data: Partial<{ isBookmarked: boolean }>,
   ): Promise<BookmarkResponseDto> {
     const bookmark = await this.prisma.bookmark.update({
       where: { bookmarkId },

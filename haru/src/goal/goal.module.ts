@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
+import { GoalController } from './goal.controller';
 import { GoalService } from './goal.service';
 import { GoalRepository } from './goal.repository';
-import { GoalController } from './goal.controller';
-import { PrismaService } from 'src/databases/prisma/prisma.service';
 @Module({
   controllers: [GoalController],
   providers: [GoalService, GoalRepository],
-  exports: [GoalService], // Exporting GoalService for use in other modules
 })
 export class GoalModule {}
