@@ -8,4 +8,6 @@ export class FindFriendDto extends OmitType(UserEntity, [
   'password',
   'authType',
   'refreshToken',
+  'imageId',
+  'isDeleted',
 ] as const) {}
