@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 
@@ -22,10 +22,17 @@ async function bootstrap() {
     .setTitle('Haru Project')
     .setDescription('Haru 프로젝트 API 문서')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
+  const customOptions: SwaggerCustomOptions = {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  };
+
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('/api-docs', app, document);
+  SwaggerModule.setup('/api-docs', app, document, customOptions);
 
   await app.listen(process.env.PORT ?? 3000);
 }
