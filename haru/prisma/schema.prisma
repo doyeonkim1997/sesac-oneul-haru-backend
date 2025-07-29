@@ -23,7 +23,7 @@ model User {
   friendRequestsSent     FriendRequest[] @relation("Requester")
   friendRequestsReceived FriendRequest[] @relation("Receiver")
   image                  Image?          @relation(fields: [imageId], references: [imageId])
-  imageId                Int            @unique  @map("image_id")
+  imageId                Int?            @unique  @map("image_id")
   // auths                  Auth[]
   bookmarks              Bookmark[]
   goals                  Goal[]
@@ -45,7 +45,6 @@ model FriendRequest {
   status     String   @default("PENDING") @map("status")
   createdAt  DateTime @default(now()) @map("created-at")
 
-  @@unique([userId, receiverId])
   // Relations
   user     User @relation("Requester", fields: [userId], references: [userId], onDelete: Cascade)
   receiver User @relation("Receiver", fields: [receiverId], references: [userId], onDelete: Cascade)

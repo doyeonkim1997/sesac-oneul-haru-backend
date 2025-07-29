@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { validateLogin } from 'src/auth/utils/validateLogin';
+import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
@@ -24,9 +24,19 @@ export class UserService {
   async updateNickNameAndImage(
     userId: number,
     user: UserEntity,
+    file: Express.Multer.File,
     updateNickNameImageDto: UpdateNickNameImageDto,
   ): Promise<UpdateOutputUserInfoDto> {
-    const { nickName, imageUrl } = updateNickNameImageDto;
+    const { nickName } = updateNickNameImageDto;
+
+    let imageUrl: string | null;
+
+    // 이미지 파일을 변하하지 않음
+    if (!file) {
+      imageUrl = null;
+    }
+
+    imageUrl = file.path.replace(/\\/g, '/').replace(/^public/, '');
 
     // 로그인 검사
     validateLogin(userId, user.userId);
@@ -37,19 +47,21 @@ export class UserService {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    // 이미지 Url이 있을 경우
-    if (imageUrl) {
-      const profileImage = await this.userRepository.findProfileImageByUser(user);
+    await this.uploadUserImage(userId, imageUrl);
 
-      // 이미지가 존재하지않을 경우 (처음 이미지 설정)
-      if (!profileImage) {
-        // 이미지 생성 후 설정(기본 이미지 생성하면 필요없어질 로직)
-        const image = await this.userRepository.createImage(imageUrl);
-        await this.userRepository.updateProfileImage(image.imageId, imageUrl);
-      } else {
-        await this.userRepository.updateProfileImage(profileImage.imageId, imageUrl);
-      }
-    }
+    // 이미지 Url이 있을 경우
+    // if (imageUrl) {
+    //   const profileImage = await this.userRepository.findProfileImageByUser(user);
+
+    //   // 이미지가 존재하지않을 경우 (처음 이미지 설정)
+    //   if (!profileImage) {
+    //     // 이미지 생성 후 설정(기본 이미지 생성하면 필요없어질 로직)
+    //     const image = await this.userRepository.createImage(imageUrl);
+    //     await this.userRepository.updateProfileImage(image.imageId, imageUrl);
+    //   } else {
+    //     await this.userRepository.updateProfileImage(profileImage.imageId, imageUrl);
+    //   }
+    // }
 
     return await this.userRepository.updateNickname(findUser.userId, nickName);
   }
@@ -109,5 +121,26 @@ export class UserService {
     }
 
     return '회원 탈퇴 성공';
+  }
+
+  // imageUpload(file: Express.Multer.File) {
+  //   if (!file) {
+  //     throw new BadRequestException('파일이 존재하지 않습니다.');
+  //   }
+
+  //   return file.path;
+  // }
+
+  async uploadUserImage(userId: number, imageUrl: string) {
+    // 이미지 테이블 저장
+    const image = await this.userRepository.createImage(imageUrl);
+
+    // user에 저장된 이미지id 저장
+    await this.userRepository.updateImageId(userId, image.imageId);
+  }
+
+  // 기본 이미지 저장용
+  async saveDefaultImage(): Promise<void> {
+    await this.userRepository.saveDefaultImage();
   }
 }

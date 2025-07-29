@@ -78,7 +78,7 @@ export class UserEntity {
     required: true,
   })
   @IsInt()
-  imageId: number;
+  imageId: number | null;
 
   @ApiProperty({
     type: Boolean,

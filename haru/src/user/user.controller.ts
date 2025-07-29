@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,11 +7,16 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { multerOptions } from 'src/utils/multer/multer-config';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
 import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
@@ -44,13 +50,15 @@ export class UserController {
     type: UpdateOutputUserInfoDto,
   })
   @Patch('/:id/profile')
+  @UseInterceptors(FileInterceptor('file', multerOptions))
   @UseGuards(AuthGuard('jwt'))
   updateNickName(
     @Param('id', ParseIntPipe) id: number,
     @getUser() user: UserEntity,
+    @UploadedFile() file: Express.Multer.File,
     @Body() updateNickNameImageDto: UpdateNickNameImageDto,
   ): Promise<UpdateOutputUserInfoDto> {
-    return this.userService.updateNickNameAndImage(id, user, updateNickNameImageDto);
+    return this.userService.updateNickNameAndImage(id, user, file, updateNickNameImageDto);
   }
 
   @ApiOperation({
@@ -88,5 +96,29 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   testUser(@getUser() user: UserEntity) {
     console.log(user.userId);
+  }
+
+  // 파일 받기 테스트용 API
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  @Post('/upload/image')
+  @UseGuards(AuthGuard('jwt'))
+  uploadImage(@getUser() user: UserEntity, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('이미지 파일이 필요합니다.');
+    }
+
+    const imageUrl = file.path.replace(/\\/g, '/').replace(/^public/, '');
+
+    this.userService.uploadUserImage(user.userId, imageUrl);
+
+    return { imageUrl };
+
+    // console.log(file);
+    // return this.userService.imageUpload(file);
+  }
+
+  @Get('/defaultImage')
+  defaultImage() {
+    return this.userService.saveDefaultImage();
   }
 }

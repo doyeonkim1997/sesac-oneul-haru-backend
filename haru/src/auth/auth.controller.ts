@@ -36,11 +36,11 @@ export class AuthController {
       socialLoginDto: socialUser,
     });
 
-    // refreshToken과 accessToekn을 쿠키에 넣고 전달 후
+    // refreshToken과 accessToken을 쿠키에 넣고 전달 후
     res.cookie('refreshToken', refreshToken, { httpOnly: true }); // xss 공격 보호
     // res.cookie('accessToken', accessToken, { httpOnly: true });
 
-    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
     return { accessToken };
@@ -73,7 +73,7 @@ export class AuthController {
     // res.cookie('accessToken', accessToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
-    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
     return { accessToken };
@@ -97,7 +97,7 @@ export class AuthController {
     // res.cookie('accessToken', accessToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
-    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
     return { accessToken };
@@ -117,7 +117,7 @@ export class AuthController {
     // res.cookie('accessToken', accessToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
-    console.log(`acessToken 확인 : ${accessToken}`);
+    console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
     return { accessToken };

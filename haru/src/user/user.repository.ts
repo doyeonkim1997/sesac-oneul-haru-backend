@@ -78,6 +78,18 @@ export class UserRepository {
     return image;
   }
 
+  // 이미지 저장시 사용자 테이블 imageId 저장
+  async updateImageId(userId: number, imageId: number): Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        userId,
+      },
+      data: {
+        imageId,
+      },
+    });
+  }
+
   // 사용자 닉네임 변경
   async updateNickname(userId: number, nickName: string): Promise<UpdateOutputUserInfoDto> {
     const updateUser = await this.prisma.user.update({
@@ -142,5 +154,14 @@ export class UserRepository {
     });
 
     return true;
+  }
+
+  // prisma seed 예시 (초기 데이터 삽입)
+  async saveDefaultImage(): Promise<void> {
+    await this.prisma.image.create({
+      data: {
+        imageUrl: '/image/haru 아이콘.jpeg',
+      },
+    });
   }
 }
