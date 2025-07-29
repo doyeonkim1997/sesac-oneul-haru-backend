@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/databases/prisma/prisma.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
 import { FindGoalFilterDto } from './dto/find-goal-filter.dto';
+import { CheerResponseDto } from './dto/cheer-response.dto';
 
 @Injectable()
 export class GoalRepository {
@@ -111,5 +112,59 @@ export class GoalRepository {
     });
 
     return true;
+  }
+
+  // 응원 증가
+  async cheerGoal(goalId: number): Promise<CheerResponseDto | null> {
+    try {
+      const updatedGoal = await this.prisma.goal.update({
+        where: { goalId },
+        data: { cheerCount: { increment: 1 } },
+        select: { goalId: true, cheerCount: true },
+      });
+      return updatedGoal;
+    } catch {
+      throw new NotFoundException('목표를 찾을 수 없습니다.');
+    }
+  }
+
+  // 응원 취소
+  async cancelCheerGoal(goalId: number): Promise<CheerResponseDto> {
+    const goal = await this.prisma.goal.findUnique({
+      where: { goalId },
+      select: { cheerCount: true },
+    });
+    if (!goal) throw new NotFoundException('목표를 찾을 수 없습니다.');
+
+    const newCount = goal.cheerCount > 0 ? goal.cheerCount - 1 : 0;
+
+    const updatedGoal = await this.prisma.goal.update({
+      where: { goalId },
+      data: { cheerCount: newCount },
+      select: { goalId: true, cheerCount: true },
+    });
+    return updatedGoal;
+  }
+
+  // 전체 응원 누적 수
+  async totalCheerCount(userId: number): Promise<number> {
+    const result = await this.prisma.goal.aggregate({
+      _sum: { cheerCount: true },
+      where: { userId, isDeleted: false },
+    });
+    return result._sum.cheerCount ?? 0;
+  }
+
+  // 오늘 응원 누적 수
+  async todayCheerCount(userId: number, todayStart: Date, todayEnd: Date): Promise<number> {
+    const result = await this.prisma.goal.aggregate({
+      _sum: { cheerCount: true },
+      where: {
+        userId,
+        createdAt: { gte: todayStart, lte: todayEnd },
+        isDeleted: false,
+      },
+    });
+    return result._sum.cheerCount ?? 0;
   }
 }

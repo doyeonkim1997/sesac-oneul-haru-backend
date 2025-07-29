@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Query,
   UseGuards,
+  Req,
   Request,
   NotFoundException,
 } from '@nestjs/common';
@@ -100,5 +101,39 @@ export class GoalController {
   ) {
     await this.goalService.deleteGoal(goalId, userId);
     return { message: '목표가 성공적으로 삭제되었습니다.' };
+  }
+
+  // 응원 증가
+  @Post(':goalId/cheer')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '응원 증가' })
+  @ApiResponse({ status: 200, description: '응원 증가' })
+  async cheerGoal(@Param('goalid', ParseIntPipe) goalId: number) {
+    return await this.goalService.cheerGoal(goalId);
+  }
+
+  // 응원 삭제
+  @Delete(':goalId/cheer')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: '응원 삭제' })
+  @ApiResponse({ status: 200, description: '응원 삭제' })
+  async canncelCheerGoal(@Param('goalid', ParseIntPipe) goalId: number) {
+    return await this.goalService.cancelCheerGoal(goalId);
+  }
+
+  // 전체 누적 응원 수
+  @UseGuards(AuthGuard('jwt'))
+  @Get('cheer/total')
+  async getTotalCheerCount(@Req() req) {
+    const userId = req.user.userId;
+    const count = await this.goalService.totalCheerCount(userId);
+    return { totalCheerCount: count };
+  }
+
+  // 오늘 누적 응원 수
+  @Get('cheer/count/today')
+  async getTodayCheerCount(@Req() req) {
+    const userId = req.user.userId;
+    return this.goalService.todayCheerCount(userId);
   }
 }
