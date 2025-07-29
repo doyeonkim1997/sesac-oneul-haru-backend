@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/databases/prisma/prisma.service';
-import { FindFriendDto } from './dto/find-friend-dto';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
-import { FriendRequestStatus } from './enum/friend-request-status.enum';
-import { UserEntity } from './entity/user.entity';
 import { ImageEntity } from './entity/image.entity';
+import { UserEntity } from './entity/user.entity';
 
 @Injectable()
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // 처음에 프로필 설정 시 프로필 이미지 생성
+  // 처음 프로필 설정 시 프로필 이미지 생성
   async createImage(imageUrl: string): Promise<ImageEntity> {
     const image = await this.prisma.image.create({
       data: {
@@ -62,35 +60,6 @@ export class UserRepository {
     return user;
   }
 
-  // 사용자 id로 친구 목록 조회
-  async findFriendsByUserId(userId: number): Promise<FindFriendDto[]> {
-    const results = await this.prisma.friendRequest.findMany({
-      where: {
-        status: FriendRequestStatus.ACCEPT,
-        OR: [{ userId: userId }, { receiverId: userId }],
-      },
-      include: {
-        user: {
-          select: { userId: true, nickName: true, tier: true },
-        },
-        receiver: {
-          select: { userId: true, nickName: true, tier: true },
-        },
-      },
-    });
-
-    // 요청자/수락자 중 userId가 아닌 쪽을 친구로 반환
-    const friends = results.map((req) => {
-      if (req.userId === userId) {
-        return req.receiver;
-      } else {
-        return req.user;
-      }
-    });
-
-    return friends;
-  }
-
   // 해당 사용자의 이미지id 가져옴
   async findProfileImageByUser(user: UserEntity): Promise<ImageEntity | null> {
     const image = await this.prisma.image.findFirst({
@@ -108,12 +77,6 @@ export class UserRepository {
 
   // 사용자 닉네임 변경
   async updateNickname(userId: number, nickName: string): Promise<UpdateOutputUserInfoDto> {
-    // const image = await this.prisma.image.findFirst({
-    //   where: {
-    //     user,
-    //   },
-    // });
-
     const updateUser = await this.prisma.user.update({
       where: {
         userId,
