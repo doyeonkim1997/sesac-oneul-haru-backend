@@ -7,6 +7,8 @@ import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FriendModule } from './friend/friend.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -18,6 +20,10 @@ import { FriendModule } from './friend/friend.module';
     BookmarksModule,
     MailModule,
     FriendModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/',
+    }),
   ],
 })
 export class AppModule {}

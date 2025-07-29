@@ -11,13 +11,4 @@ export class UpdateNickNameImageDto {
   @IsString()
   @IsNotEmpty()
   nickName: string;
-
-  @ApiProperty({
-    type: String,
-    description: '이미지 url',
-    example: 'askldjqklwasldasf.a,f',
-    required: false,
-  })
-  @IsString()
-  imageUrl: string | null;
 }

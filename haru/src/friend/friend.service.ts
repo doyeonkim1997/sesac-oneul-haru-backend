@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { validateLogin } from 'src/auth/utils/validateLogin';
+import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { UserRepository } from '../user/user.repository';
 import { FindFriendDto } from './dto/find-friend-dto';
