@@ -55,7 +55,7 @@ export class AuthRepository {
         nickName: nickName,
         authType: authType,
         tier: Tier.BRONZE,
-        imageId: 1, // 기본 이미지로 저장( 이미지 폴더, DB에 이미지 저장돼 있어야 됨)
+        // imageId: 1, // 기본 이미지로 저장( 이미지 폴더, DB에 이미지 저장돼 있어야 됨)
       },
     });
   }
