@@ -4,6 +4,7 @@ import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
 import { FindGoalFilterDto } from './dto/find-goal-filter.dto';
+import { CheerResponseDto } from './dto/cheer-response.dto';
 
 @Injectable()
 export class GoalService {
@@ -49,5 +50,32 @@ export class GoalService {
   async deleteGoal(goalId: number, userId: number): Promise<void> {
     const deleted = await this.goalRepository.deleteGoal(goalId, userId);
     if (!deleted) throw new NotFoundException('삭제할 목표가 존재하지 않습니다.');
+  }
+
+  // 응원 증가
+  async cheerGoal(goalId: number): Promise<CheerResponseDto | null> {
+    return this.goalRepository.cheerGoal(goalId);
+  }
+
+  // 응원 취소
+  async cancelCheerGoal(goalId: number): Promise<CheerResponseDto> {
+    return this.goalRepository.cancelCheerGoal(goalId);
+  }
+
+  // 전체 응원 누적 수
+  async totalCheerCount(userId: number): Promise<number> {
+    return this.goalRepository.totalCheerCount(userId);
+  }
+
+  // 오늘 응원 누적 수
+  async todayCheerCount(userId: number): Promise<number> {
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    return this.goalRepository.todayCheerCount(userId, todayStart, todayEnd);
   }
 }
