@@ -117,6 +117,7 @@ export class UserController {
     // return this.userService.imageUpload(file);
   }
 
+  // 기본 이미지 생성용 회원가입 전 무조건 한 번 실행
   @Get('/defaultImage')
   defaultImage() {
     return this.userService.saveDefaultImage();

@@ -11,6 +11,8 @@ import { MailRepository } from 'src/mail/mail.repository';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { PassportModule } from '@nestjs/passport';
 import { RefreshStrategy } from './strategies/refresh-strategy';
+import { UserService } from 'src/user/user.service';
+import { UserRepository } from 'src/user/user.repository';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { RefreshStrategy } from './strategies/refresh-strategy';
     NaverStrategy,
     JwtStrategy,
     RefreshStrategy,
+    UserService,
+    UserRepository,
   ],
 })
 export class AuthModule {}

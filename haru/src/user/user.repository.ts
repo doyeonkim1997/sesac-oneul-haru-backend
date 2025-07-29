@@ -20,6 +20,15 @@ export class UserRepository {
     return image;
   }
 
+  // 회원가입할 때 이미지 URL 찾아서 집어넣기 위한 메서드
+  async findImageById(imageId: number): Promise<ImageEntity | null> {
+    return await this.prisma.image.findFirst({
+      where: {
+        imageId,
+      },
+    });
+  }
+
   // 이메일로 사용자 조회
   async findUserByEmail(search: string): Promise<FindUserDto[]> {
     const user = await this.prisma.user.findMany({

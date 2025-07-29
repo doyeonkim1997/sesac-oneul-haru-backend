@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import {
   IAuthServiceSocialLoginInput,
@@ -13,6 +19,8 @@ import { EmailSignUpDto } from './dto/email-signup-dto';
 import { EmailCheckDto } from './dto/email-check-dto';
 import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { FindUserInfoDto } from './dto/find-user-info-dto';
+import { UserRepository } from 'src/user/user.repository';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +28,8 @@ export class AuthService {
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly mailRepository: MailRepository,
+    private readonly userRepository: UserRepository,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -170,10 +180,12 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    await this.authRepository.createUser({
+    const createUser = await this.authRepository.createUser({
       createUserDto: { email, hashedPassword, nickName },
       authType, // 해당 인증 타입으로 회원가입
     });
+
+    await this.setDefaultImage(createUser.userId);
 
     return true;
   }
@@ -254,7 +266,22 @@ export class AuthService {
       createUserDto: { email, hashedPassword, nickName },
       authType, // 해당 인증 타입으로 회원가입
     });
+
+    await this.setDefaultImage(user.userId);
+
     return user;
+  }
+
+  // 회원가입 시 기본 이미지 설정용 함수
+  private async setDefaultImage(userId: number) {
+    const image = await this.userRepository.findImageById(1);
+
+    if (!image?.imageUrl) {
+      throw new InternalServerErrorException('먼저 기본 이미지를 DB에 저장해주세요.');
+    }
+
+    // 기본 이미지 설정
+    await this.userService.uploadUserImage(userId, image.imageUrl);
   }
 
   // accessToken
