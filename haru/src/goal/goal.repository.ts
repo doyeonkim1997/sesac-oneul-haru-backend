@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/databases/prisma/prisma.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
@@ -12,110 +12,147 @@ export class GoalRepository {
 
   // 목표 생성
   async createGoal(createGoalDto: CreateGoalDto, userId: number): Promise<CreateGoalDto | null> {
-    return await this.prisma.goal.create({
-      data: {
-        userId: userId,
-        // title: createGoalDto.title, // title 필드 제거
-        content: createGoalDto.content, // content는 그대로 사용
-        category: createGoalDto.category,
-      },
-    });
+    try {
+      return await this.prisma.goal.create({
+        data: {
+          userId: userId,
+          content: createGoalDto.content,
+          category: createGoalDto.category,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('목표 생성에 실패했습니다.');
+    }
   }
 
   // 내 목표 조회
-  async getGoalById(goalId: number, userId: number): Promise<FindGoalDto | null> {
-    return await this.prisma.goal.findFirst({
-      where: { goalId: goalId, userId: userId, isDeleted: false },
-    });
+  async getGoalById(goalId: number, userId: number): Promise<FindGoalDto> {
+    try {
+      const goal = await this.prisma.goal.findFirst({
+        where: { goalId: goalId, userId: userId, isDeleted: false },
+      });
+      if (!goal) throw new NotFoundException('목표를 찾을 수 없습니다.');
+      return goal;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('목표 조회 중 오류가 발생했습니다.');
+    }
   }
 
   // 내 목표 전체 조회
   async getAllGoal(userId: number): Promise<FindGoalDto[]> {
-    return await this.prisma.goal.findMany({
-      where: { userId: userId, isDeleted: false },
-      orderBy: { createdAt: 'desc' },
-    });
+    try {
+      return await this.prisma.goal.findMany({
+        where: { userId: userId, isDeleted: false },
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch {
+      throw new InternalServerErrorException('목표 목록 조회에 실패했습니다.');
+    }
   }
 
   // 목표 수정
   async updateGoal(goalId: number, updateGoalDto: UpdateGoalDto): Promise<UpdateGoalDto> {
-    return await this.prisma.goal.update({
-      where: { goalId: goalId },
-      data: {
-        // title: updateGoalDto.title, // title 필드 제거
-        content: updateGoalDto.content, // content는 그대로 사용
-        category: updateGoalDto.category,
-        isCompleted: updateGoalDto.isCompleted,
-      },
-    });
+    try {
+      // 업데이트 전 존재 여부 확인
+      const existingGoal = await this.prisma.goal.findUnique({
+        where: { goalId },
+      });
+      if (!existingGoal) throw new NotFoundException('수정할 목표를 찾을 수 없습니다.');
+
+      return await this.prisma.goal.update({
+        where: { goalId: goalId },
+        data: {
+          content: updateGoalDto.content,
+          category: updateGoalDto.category,
+          isCompleted: updateGoalDto.isCompleted,
+        },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('목표 수정에 실패했습니다.');
+    }
   }
 
   // 친구 목록 (변경 없음)
   async getFriendIds(userId: number): Promise<number[]> {
-    const sent = await this.prisma.friendRequest.findMany({
-      where: {
-        userId,
-        status: 'ACCEPTED',
-      },
-      select: { receiverId: true },
-    });
+    try {
+      const sent = await this.prisma.friendRequest.findMany({
+        where: {
+          userId,
+          status: 'ACCEPTED',
+        },
+        select: { receiverId: true },
+      });
 
-    const received = await this.prisma.friendRequest.findMany({
-      where: {
-        receiverId: userId,
-        status: 'ACCEPTED',
-      },
-      select: { userId: true },
-    });
+      const received = await this.prisma.friendRequest.findMany({
+        where: {
+          receiverId: userId,
+          status: 'ACCEPTED',
+        },
+        select: { userId: true },
+      });
 
-    const freindIds = [...sent.map((s) => s.receiverId), ...received.map((r) => r.userId)];
+      const friendIds = [...sent.map((s) => s.receiverId), ...received.map((r) => r.userId)];
 
-    return Array.from(new Set(freindIds));
+      return Array.from(new Set(friendIds));
+    } catch {
+      throw new InternalServerErrorException('친구 목록 조회에 실패했습니다.');
+    }
   }
 
   // 목표 필터링 (변경 없음)
-  async goalFilter(filerDto: FindGoalFilterDto): Promise<FindGoalDto[]> {
-    const { userId, isCompleted } = filerDto;
+  async goalFilter(filterDto: FindGoalFilterDto): Promise<FindGoalDto[]> {
+    try {
+      const { userId, isCompleted } = filterDto;
 
-    let userIds: number[] = [userId];
+      let userIds: number[] = [userId];
 
-    if (isCompleted === 'all') {
-      const friendIds = await this.getFriendIds(userId);
-      userIds = [...userIds, ...friendIds];
+      if (isCompleted === 'all') {
+        const friendIds = await this.getFriendIds(userId);
+        userIds = [...userIds, ...friendIds];
+      }
+
+      const whereCondition: any = {
+        userId: { in: userIds },
+        isDeleted: false,
+      };
+
+      if (isCompleted !== 'all') {
+        whereCondition.isCompleted = isCompleted;
+      }
+
+      return await this.prisma.goal.findMany({
+        where: whereCondition,
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch {
+      throw new InternalServerErrorException('목표 필터링에 실패했습니다.');
     }
-
-    const whereCondition: any = {
-      userId: { in: userIds },
-      isDeleted: false,
-    };
-
-    if (isCompleted !== 'all') {
-      whereCondition.isCompleted = isCompleted;
-    }
-
-    return this.prisma.goal.findMany({
-      where: whereCondition,
-      orderBy: { createdAt: 'desc' },
-    });
   }
+
   // 목표 삭제 (소프트 딜리트) (변경 없음)
   async deleteGoal(goalId: number, userId: number): Promise<boolean> {
-    const goal = await this.prisma.goal.findFirst({
-      where: { goalId, userId, isDeleted: false },
-    });
+    try {
+      const goal = await this.prisma.goal.findFirst({
+        where: { goalId, userId, isDeleted: false },
+      });
 
-    if (!goal) return false;
+      if (!goal) return false;
 
-    await this.prisma.goal.update({
-      where: { goalId },
-      data: { isDeleted: true },
-    });
+      await this.prisma.goal.update({
+        where: { goalId },
+        data: { isDeleted: true },
+      });
 
-    return true;
+      return true;
+    } catch {
+      throw new InternalServerErrorException('목표 삭제에 실패했습니다.');
+    }
   }
 
   // 응원 증가
-  async cheerGoal(goalId: number): Promise<CheerResponseDto | null> {
+  async cheerGoal(goalId: number): Promise<CheerResponseDto> {
     try {
       const updatedGoal = await this.prisma.goal.update({
         where: { goalId },
@@ -130,41 +167,54 @@ export class GoalRepository {
 
   // 응원 취소
   async cancelCheerGoal(goalId: number): Promise<CheerResponseDto> {
-    const goal = await this.prisma.goal.findUnique({
-      where: { goalId },
-      select: { cheerCount: true },
-    });
-    if (!goal) throw new NotFoundException('목표를 찾을 수 없습니다.');
+    try {
+      const goal = await this.prisma.goal.findUnique({
+        where: { goalId },
+        select: { cheerCount: true },
+      });
+      if (!goal) throw new NotFoundException('목표를 찾을 수 없습니다.');
 
-    const newCount = goal.cheerCount > 0 ? goal.cheerCount - 1 : 0;
+      const newCount = goal.cheerCount > 0 ? goal.cheerCount - 1 : 0;
 
-    const updatedGoal = await this.prisma.goal.update({
-      where: { goalId },
-      data: { cheerCount: newCount },
-      select: { goalId: true, cheerCount: true },
-    });
-    return updatedGoal;
+      const updatedGoal = await this.prisma.goal.update({
+        where: { goalId },
+        data: { cheerCount: newCount },
+        select: { goalId: true, cheerCount: true },
+      });
+      return updatedGoal;
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException('응원 취소에 실패했습니다.');
+    }
   }
 
   // 전체 응원 누적 수
   async totalCheerCount(userId: number): Promise<number> {
-    const result = await this.prisma.goal.aggregate({
-      _sum: { cheerCount: true },
-      where: { userId, isDeleted: false },
-    });
-    return result._sum.cheerCount ?? 0;
+    try {
+      const result = await this.prisma.goal.aggregate({
+        _sum: { cheerCount: true },
+        where: { userId, isDeleted: false },
+      });
+      return result._sum.cheerCount ?? 0;
+    } catch {
+      throw new InternalServerErrorException('전체 응원 누적 수 조회에 실패했습니다.');
+    }
   }
 
   // 오늘 응원 누적 수
   async todayCheerCount(userId: number, todayStart: Date, todayEnd: Date): Promise<number> {
-    const result = await this.prisma.goal.aggregate({
-      _sum: { cheerCount: true },
-      where: {
-        userId,
-        createdAt: { gte: todayStart, lte: todayEnd },
-        isDeleted: false,
-      },
-    });
-    return result._sum.cheerCount ?? 0;
+    try {
+      const result = await this.prisma.goal.aggregate({
+        _sum: { cheerCount: true },
+        where: {
+          userId,
+          createdAt: { gte: todayStart, lte: todayEnd },
+          isDeleted: false,
+        },
+      });
+      return result._sum.cheerCount ?? 0;
+    } catch {
+      throw new InternalServerErrorException('오늘 응원 누적 수 조회에 실패했습니다.');
+    }
   }
 }
