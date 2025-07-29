@@ -30,6 +30,9 @@ export class UserRepository {
         tier: true,
         createdAt: true,
         updatedAt: true,
+        image: {
+          select: { imageUrl: true },
+        },
       },
       where: {
         email: {
@@ -43,7 +46,7 @@ export class UserRepository {
   }
 
   // userId로 유저의 수정이 필요한 정보 조회
-  async findUserByUserId(userId: number): Promise<UpdateOutputUserInfoDto | null> {
+  async findUserByUserIdForUpdate(userId: number): Promise<UpdateOutputUserInfoDto | null> {
     const user = await this.prisma.user.findFirst({
       select: {
         userId: true,

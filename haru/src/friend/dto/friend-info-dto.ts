@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEmail, IsInt, IsNotEmpty, IsString } from 'class-validator';
-import { ImageUrlDto } from './image-url-dto';
+import { IsEmail, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { ImageUrlDto } from 'src/user/dto/image-url-dto';
 
-export class FindUserDto {
+export class FriendInfoDto {
   @ApiProperty({
     type: Number,
     description: '유저id',
@@ -51,22 +51,4 @@ export class FindUserDto {
   })
   @IsNotEmpty()
   image: ImageUrlDto | null;
-
-  @ApiProperty({
-    type: Date,
-    description: '유저 생성일',
-    example: '2021-02-12',
-    required: true,
-  })
-  @IsDateString()
-  createdAt: Date;
-
-  @ApiProperty({
-    type: Date,
-    description: '유저 정보 수정일',
-    example: '2023-03-12',
-    required: false,
-  })
-  @IsDateString()
-  updatedAt: Date | null;
 }

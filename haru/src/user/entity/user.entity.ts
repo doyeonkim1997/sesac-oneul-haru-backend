@@ -75,10 +75,10 @@ export class UserEntity {
     type: Number,
     description: '이미지 테이블의 이미지id',
     example: '2',
-    required: false,
+    required: true,
   })
   @IsInt()
-  imageId: number | null;
+  imageId: number;
 
   @ApiProperty({
     type: Boolean,

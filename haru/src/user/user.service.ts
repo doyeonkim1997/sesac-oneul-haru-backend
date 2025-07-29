@@ -1,14 +1,7 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import { validateLogin } from 'src/auth/utils/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
-import { FindFriendDto } from './dto/find-friend-dto';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
 import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
@@ -27,11 +20,6 @@ export class UserService {
     return users;
   }
 
-  // 사용자 id로 친구 목록 조회
-  async getFriendsByUserId(userId: number): Promise<FindFriendDto[]> {
-    return this.userRepository.findFriendsByUserId(userId);
-  }
-
   // 사용자 닉네임 수정
   async updateNickNameAndImage(
     userId: number,
@@ -39,11 +27,11 @@ export class UserService {
     updateNickNameImageDto: UpdateNickNameImageDto,
   ): Promise<UpdateOutputUserInfoDto> {
     const { nickName, imageUrl } = updateNickNameImageDto;
-    if (userId !== user.userId) {
-      throw new ForbiddenException('해당 사용자가 로그인한 사용자가 아닙니다.');
-    }
 
-    const findUser = await this.userRepository.findUserByUserId(userId);
+    // 로그인 검사
+    validateLogin(userId, user.userId);
+
+    const findUser = await this.userRepository.findUserByUserIdForUpdate(userId);
 
     if (!findUser) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
@@ -55,7 +43,7 @@ export class UserService {
 
       // 이미지가 존재하지않을 경우 (처음 이미지 설정)
       if (!profileImage) {
-        // 이미지 생성 후 설정
+        // 이미지 생성 후 설정(기본 이미지 생성하면 필요없어질 로직)
         const image = await this.userRepository.createImage(imageUrl);
         await this.userRepository.updateProfileImage(image.imageId, imageUrl);
       } else {
@@ -74,11 +62,10 @@ export class UserService {
   ): Promise<UpdateOutputUserInfoDto> {
     const { currentPassword, newPassword, confirmPassword } = updatePasswordDto;
 
-    if (userId !== user.userId) {
-      throw new UnauthorizedException('해당 사용자가 로그인한 사용자가 아닙니다.');
-    }
+    // 로그인 검사
+    validateLogin(userId, user.userId);
 
-    const findUser = await this.userRepository.findUserByUserId(userId);
+    const findUser = await this.userRepository.findUserByUserIdForUpdate(userId);
 
     if (!findUser) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
@@ -104,13 +91,12 @@ export class UserService {
     this.logger.debug(` 불린 값 : ${user.userId !== userId}`);
     this.logger.debug(`userId type: ${typeof userId}, user.userId type: ${typeof user.userId}`);
 
-    if (userId !== user.userId) {
-      throw new UnauthorizedException('해당 사용자가 로그인한 사용자가 아닙니다.');
-    }
+    // 로그인 검사
+    validateLogin(userId, user.userId);
 
     this.logger.debug(`회원탈퇴 service 실행`);
 
-    const findUser = await this.userRepository.findUserByUserId(userId);
+    const findUser = await this.userRepository.findUserByUserIdForUpdate(userId);
 
     if (!findUser) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
