@@ -2,10 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsBoolean } from 'class-validator';
 
 export class CreateBookmarkDto {
-  @ApiProperty({ example: 1, description: '유저 ID' })
-  @IsInt()
-  userId: number;
-
   @ApiProperty({ example: 1, description: '목표 ID' })
   @IsInt()
   goalId: number;
