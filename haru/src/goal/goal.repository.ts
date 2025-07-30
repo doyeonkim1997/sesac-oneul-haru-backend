@@ -3,8 +3,9 @@ import { PrismaService } from 'src/databases/prisma/prisma.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
-import { FindGoalFilterDto } from './dto/find-goal-filter.dto';
+
 import { CheerResponseDto } from './dto/cheer-response.dto';
+import { FilterGoalDto } from './dto/filter-goal.dto';
 
 @Injectable()
 export class GoalRepository {
@@ -20,7 +21,7 @@ export class GoalRepository {
           category: createGoalDto.category,
         },
       });
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('목표 생성에 실패했습니다.');
     }
   }
@@ -102,9 +103,9 @@ export class GoalRepository {
   }
 
   // 목표 필터링 (변경 없음)
-  async goalFilter(filterDto: FindGoalFilterDto): Promise<FindGoalDto[]> {
+  async goalFilter(filterGoalDto: FilterGoalDto): Promise<FindGoalDto[]> {
     try {
-      const { userId, isCompleted } = filterDto;
+      const { userId, isCompleted } = filterGoalDto;
 
       let userIds: number[] = [userId];
 
