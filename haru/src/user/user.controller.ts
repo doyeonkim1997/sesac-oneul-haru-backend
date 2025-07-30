@@ -15,7 +15,14 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { multerOptions } from 'src/utils/multer/multer-config';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
@@ -34,10 +41,16 @@ export class UserController {
     description: '이메일로 사용자를 조회하며 사용자가 없으면 0의 배열을 반환.',
   })
   @ApiResponse({
+    status: 200,
+    description: '사용자 정보 배열',
     type: FindUserDto,
     isArray: true,
   })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
   @Get('/email')
+  @UseGuards(AuthGuard('jwt'))
   searchUserByEmail(@Query('search') search: string): Promise<FindUserDto[]> {
     return this.userService.searchUserByEmail(search);
   }
@@ -47,7 +60,18 @@ export class UserController {
     description: '닉네임, 프로필 사진 변경',
   })
   @ApiResponse({
+    description: '수정 완료된 사용자 정보',
+    status: 200,
     type: UpdateOutputUserInfoDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '사용자를 찾을 수 없습니다.',
   })
   @Patch('/:id/profile')
   @UseInterceptors(FileInterceptor('file', multerOptions))
@@ -66,7 +90,24 @@ export class UserController {
     description: '현재 비밀번호, 새 비밀번호, 새 비밀번호 재입력 하여 비밀번호 수정',
   })
   @ApiResponse({
+    description: '비밀번호 수정 완료된 사용자 정보',
+    status: 200,
     type: UpdateOutputUserInfoDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '사용자를 찾을 수 없습니다.',
+  })
+  @ApiBadRequestResponse({
+    description: '현재 비밀번호를 다시 입력해주세요.',
+  })
+  @ApiBadRequestResponse({
+    description: '비밀번호 일치 여부를 확인해주세요.',
   })
   @Patch('/:id/password')
   @UseGuards(AuthGuard('jwt'))
@@ -83,7 +124,21 @@ export class UserController {
     description: '회원 탈퇴',
   })
   @ApiResponse({
+    status: 200,
     type: String,
+    description: '회원 탈퇴 성공',
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '사용자를 찾을 수 없습니다.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '회원 탈퇴 실패',
   })
   @Delete('/:id')
   @UseGuards(AuthGuard('jwt'))

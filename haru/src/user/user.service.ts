@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
@@ -117,7 +123,7 @@ export class UserService {
     const isDeleted = await this.userRepository.deleteUser(userId);
 
     if (!isDeleted) {
-      return '회원 탈퇴 실패';
+      throw new InternalServerErrorException('회원 탈퇴 실패');
     }
 
     return '회원 탈퇴 성공';
