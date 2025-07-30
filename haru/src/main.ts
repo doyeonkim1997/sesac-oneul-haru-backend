@@ -17,6 +17,13 @@ async function bootstrap() {
     }),
   );
 
+  // cors 설정
+  app.enableCors({
+    origin: [process.env.FRONT_ADDRESS],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   // Swagger 관련 설정
   const options = new DocumentBuilder()
     .setTitle('Haru Project')

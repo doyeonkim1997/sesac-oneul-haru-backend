@@ -26,7 +26,6 @@ import {
 import { multerOptions } from 'src/utils/multer/multer-config';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
-import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
 import { UpdatePasswordDto } from './dto/update-password-dto';
 import { UserEntity } from './entity/user.entity';
 import { getUser } from './get-user-decorator';
