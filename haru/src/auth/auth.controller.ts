@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Logger, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { getUser } from 'src/user/get-user-decorator';
@@ -25,6 +30,21 @@ export class AuthController {
   @ApiOperation({
     summary: '카카오 로그인/회원가입',
     description: '카카오 로그인 버튼을 누르면 회원가입',
+  })
+  @ApiResponse({
+    description: 'JWT accessToken 반환',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          example: 'eyjHskdjqk2kjakdjiqkljLKKKKKDjjdswioque',
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: '이미 가입된 상태입니다.',
   })
   @UseGuards(KakaoAuthGuard)
   @Get('login/kakao')
@@ -59,6 +79,21 @@ export class AuthController {
     summary: '구글 로그인 콜백',
     description: '구글 로그인 콜백 주소, 토큰 생성 및 로그인/회원가입 실행',
   })
+  @ApiResponse({
+    description: 'JWT accessToken 반환',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          example: 'eyjHskdjqk2kjakdjiqkljLKKKKKDjjdswioque',
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: '이미 가입된 상태입니다.',
+  })
   // 구글 로그인 콜백 url
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
@@ -84,6 +119,21 @@ export class AuthController {
     summary: '네이버 로그인/회원가입',
     description: '네이버 로그인 버튼을 누르면 회원가입',
   })
+  @ApiResponse({
+    description: 'JWT accessToken 반환',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          example: 'eyjHskdjqk2kjakdjiqkljLKKKKKDjjdswioque',
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: '이미 가입된 상태입니다.',
+  })
   @UseGuards(NaverAuthGuard)
   @Get('login/naver')
   async naverCallback(
@@ -107,6 +157,21 @@ export class AuthController {
     summary: '이메일 로그인',
     description: '이메일과 비밀번호를 통해 로그인',
   })
+  @ApiResponse({
+    description: 'JWT accessToken 반환',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          example: 'eyjHskdjqk2kjakdjiqkljLKKKKKDjjdswioque',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인 또는 비밀번호를 다시 입력해주세요.',
+  })
   @Post('login/email')
   async emailLogin(
     @Body() emailLoginDto: EmailLoginDto,
@@ -127,6 +192,14 @@ export class AuthController {
     summary: '이메일 회원가입',
     description: '회원가입 버튼을 누를 시 동작하는 이메일 회원가입',
   })
+  @ApiResponse({
+    status: 200,
+    description: '회원가입 성공',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '회원가입 실패',
+  })
   @Post('signup/email')
   async emailSignUp(@Body() emailSignUpDto: EmailSignUpDto, @Res() res: Response): Promise<void> {
     const isSignUpSuccess = await this.authService.EmailSignUp(emailSignUpDto, AuthType.EMAIL);
@@ -143,6 +216,10 @@ export class AuthController {
     summary: '이메일 중복확인',
     description: '중복확인 버튼을 통해 중복되면 false 반환',
   })
+  @ApiResponse({
+    status: 201,
+    description: 'true / false',
+  })
   @Post('check/email')
   async isEmailExists(@Body() emailCheckDto: EmailCheckDto): Promise<boolean> {
     return await this.authService.isEmailExists(emailCheckDto);
@@ -151,6 +228,18 @@ export class AuthController {
   @ApiOperation({
     summary: 'accessToken 재발급',
     description: 'DB에 저장된 refreshToken으로 새로운 accessToken 발급',
+  })
+  @ApiResponse({
+    description: '새로운 JWT accessToken 반환',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          example: 'eyjHskdjqk2kjakdjiqkljLKKKKKDjjdswioque',
+        },
+      },
+    },
   })
   @Post('/refresh')
   async refresh(
@@ -168,6 +257,13 @@ export class AuthController {
     summary: '로그아웃',
     description:
       '로그아웃 버튼을 누르면 쿠키의 refreshToken과 accessToken이 삭제되고 DB에 있는 refreshToken도 null로 변경',
+  })
+  @ApiResponse({
+    status: 201,
+    description: '로그아웃 성공!',
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
   })
   @Post('/logout')
   @UseGuards(JwtRefreshGuard)
