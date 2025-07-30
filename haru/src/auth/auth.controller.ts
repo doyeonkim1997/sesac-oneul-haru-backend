@@ -263,7 +263,10 @@ export class AuthController {
     description: '로그아웃 성공!',
   })
   @ApiUnauthorizedResponse({
-    description: '로그인이 필요합니다.',
+    description: 'Refresh Token이 존재하지 않습니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '유효하지 않은 Refresh Token입니다.',
   })
   @Post('/logout')
   @UseGuards(JwtRefreshGuard)
