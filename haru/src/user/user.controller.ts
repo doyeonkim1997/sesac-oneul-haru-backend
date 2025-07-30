@@ -60,7 +60,7 @@ export class UserController {
     description: '닉네임, 프로필 사진 변경',
   })
   @ApiResponse({
-    description: '수정 완료된 사용자 정보',
+    description: '사용자 프로필 수정 완료.',
     status: 200,
     type: UpdateOutputUserInfoDto,
   })
@@ -81,8 +81,9 @@ export class UserController {
     @getUser() user: UserEntity,
     @UploadedFile() file: Express.Multer.File,
     @Body() updateNickNameImageDto: UpdateNickNameImageDto,
-  ): Promise<UpdateOutputUserInfoDto> {
-    return this.userService.updateNickNameAndImage(id, user, file, updateNickNameImageDto);
+  ): string {
+    this.userService.updateNickNameAndImage(id, user, file, updateNickNameImageDto);
+    return '사용자 프로필 수정 완료.';
   }
 
   @ApiOperation({
@@ -90,7 +91,7 @@ export class UserController {
     description: '현재 비밀번호, 새 비밀번호, 새 비밀번호 재입력 하여 비밀번호 수정',
   })
   @ApiResponse({
-    description: '비밀번호 수정 완료된 사용자 정보',
+    description: '사용자 비밀번호 수정 완료.',
     status: 200,
     type: UpdateOutputUserInfoDto,
   })
@@ -115,8 +116,9 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @getUser() user: UserEntity,
     @Body() updatePasswordDto: UpdatePasswordDto,
-  ): Promise<UpdateOutputUserInfoDto> {
-    return this.userService.updatePassword(id, user, updatePasswordDto);
+  ): string {
+    this.userService.updatePassword(id, user, updatePasswordDto);
+    return '사용자 비밀번호 수정 완료.';
   }
 
   @ApiOperation({
