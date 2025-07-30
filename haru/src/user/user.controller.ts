@@ -62,7 +62,7 @@ export class UserController {
   @ApiResponse({
     description: '사용자 프로필 수정 완료.',
     status: 200,
-    type: UpdateOutputUserInfoDto,
+    type: String,
   })
   @ApiUnauthorizedResponse({
     description: '로그인이 필요합니다.',
@@ -93,7 +93,7 @@ export class UserController {
   @ApiResponse({
     description: '사용자 비밀번호 수정 완료.',
     status: 200,
-    type: UpdateOutputUserInfoDto,
+    type: String,
   })
   @ApiUnauthorizedResponse({
     description: '로그인이 필요합니다.',
