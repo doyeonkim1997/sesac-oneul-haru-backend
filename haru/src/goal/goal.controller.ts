@@ -1,31 +1,40 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Param,
   Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  NotFoundException,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
   Query,
   UseGuards,
-  Req,
-  Request,
-  NotFoundException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { GoalService } from './goal.service';
-import { CreateGoalDto } from './dto/create-goal.dto';
-import { UpdateGoalDto } from './dto/update-goal.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { FindGoalDto } from './dto/find-goal.dto';
-import { FilterGoalDto } from './dto/filter-goal.dto';
-import { CheerGoalDto } from './dto/cheer-goal.dto';
+import {
+  ApiBadRequestResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { UserEntity } from 'src/user/entity/user.entity';
+import { getUser } from 'src/user/get-user-decorator';
 import { CheerResponseDto } from './dto/cheer-response.dto';
+import { CreateGoalDto } from './dto/create-goal.dto';
+import { FilterGoalDto } from './dto/filter-goal.dto';
+import { FindGoalDto } from './dto/find-goal.dto';
+import { UpdateGoalDto } from './dto/update-goal.dto';
+import { GoalService } from './goal.service';
 
 @ApiTags('Goal')
 @Controller('goals')
 export class GoalController {
+  private logger = new Logger('GoalController');
   constructor(private readonly goalService: GoalService) {}
 
   // 목표 생성
@@ -38,11 +47,19 @@ export class GoalController {
     description: '목표 생성 성공',
     type: CreateGoalDto,
   })
-  @Post()
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '목표 생성에 실패했습니다.',
+  })
+  @Post('/')
   @UseGuards(AuthGuard('jwt'))
-  async create(@Body() createGoalDto: CreateGoalDto, @Request() req) {
-    const userId = req.user.userId;
-    return await this.goalService.createGoal(createGoalDto, userId);
+  async create(@Body() createGoalDto: CreateGoalDto, @getUser() user: UserEntity) {
+    return await this.goalService.createGoal(createGoalDto, user.userId);
   }
 
   // 사용자 특정 목표 조회
@@ -55,32 +72,57 @@ export class GoalController {
     description: '목표 조회 성공',
     type: FindGoalDto,
   })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiNotFoundResponse({
+    description: '목표를 찾을 수 없습니다.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '목표 조회 중 오류가 발생했습니다.',
+  })
   @Get(':goalId')
   @UseGuards(AuthGuard('jwt'))
   async findOne(
     @Param('goalId', ParseIntPipe) goalId: number,
-    @Query('userId', ParseIntPipe) userId: number, // 이 부분은 인증을 강화하면 req.user.userId로 대체될 수 있습니다.
+    @getUser() user: UserEntity,
   ): Promise<FindGoalDto> {
-    return await this.goalService.getGoalById(goalId, userId);
+    return await this.goalService.getGoalById(goalId, user.userId);
   }
 
   // 사용자 전체 목표 조회
   @ApiOperation({
-    summary: '모든 사용자 목표 조회',
-    description: '모든 사용자 목표 조회',
+    summary: '사용자의 전체 목표 조회',
+    description: '사용자가 작성한 모든 목표 조회',
   })
   @ApiResponse({
     status: 200,
-    description: '목표 목록 조회 성공',
+    description: '사용자 목표 목록 조회 성공',
     type: FindGoalDto,
+    isArray: true,
   })
-  @Get()
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '목표 목록 조회에 실패했습니다.',
+  })
+  @Get('/:userId/all')
   @UseGuards(AuthGuard('jwt'))
-  async findAll(@Query('userId', ParseIntPipe) userId: number): Promise<FindGoalDto[]> {
-    return await this.goalService.getAllGoals(userId);
+  async findAll(
+    @Param('userId', ParseIntPipe) userId: number,
+    @getUser() user: UserEntity,
+  ): Promise<FindGoalDto[]> {
+    return await this.goalService.getAllGoals(userId, user);
   }
 
-  // 필터링
+  // 필터링 (필요 X)
   @ApiOperation({
     summary: '목표 목록 필터링',
     description: '목표 목록 필터링',
@@ -90,17 +132,27 @@ export class GoalController {
     description: '전체/완료/미완료',
     type: FilterGoalDto,
   })
-  @Get('filter')
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '목표 필터링에 실패했습니다.',
+  })
+  @Get('/:userId/filter')
   @UseGuards(AuthGuard('jwt'))
   async getFilteredGoals(
-    @Query('userId', ParseIntPipe) userId: number,
+    @getUser() user: UserEntity,
+    @Param('userId', ParseIntPipe) userId: number,
     @Query('status') status: 'all' | 'true' | 'false' = 'all',
   ) {
     const filterDto: FilterGoalDto = {
       userId,
       isCompleted: status === 'true' ? true : status === 'false' ? false : 'all',
     };
-    return this.goalService.goalFilter(filterDto);
+    return this.goalService.goalFilter(filterDto, userId, user);
   }
 
   // 사용자 목표 수정
@@ -113,18 +165,31 @@ export class GoalController {
     description: '목표 수정 성공',
     type: String,
   })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiNotFoundResponse({
+    description: '해당 목표를 찾을 수 없습니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '수정 권한이 없는 목표이거나 목표를 찾을 수 없습니다.',
+  })
   @Patch(':goalId')
   @UseGuards(AuthGuard('jwt'))
   async update(
     @Param('goalId', ParseIntPipe) goalId: number,
     @Body() updateGoalDto: UpdateGoalDto,
-    @Request() req,
+    @getUser() user: UserEntity,
   ) {
-    const userId = req.user.userId;
-
-    const goal = await this.goalService.getGoalById(goalId, userId);
+    this.logger.debug('사용자 수정 컨트롤러 시작 ');
+    const goal = await this.goalService.getGoalById(goalId, user.userId);
     if (!goal) throw new NotFoundException('수정 권한이 없는 목표입니다.');
-    return await this.goalService.updateGoal(goalId, updateGoalDto, userId);
+    await this.goalService.updateGoal(goalId, updateGoalDto, user.userId);
+    this.logger.debug(`${goal.content} 변경되는 목표 확인 `);
+    return '목표 수정 완료';
   }
 
   // 삭제(소프트 딜리트)
@@ -137,14 +202,20 @@ export class GoalController {
     description: '목표 삭제 성공',
     type: String,
   })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '삭제할 목표가 존재하지 않습니다.',
+  })
   @Delete(':goalId')
   @UseGuards(AuthGuard('jwt'))
-  async deleteGoal(
-    @Param('goalId', ParseIntPipe) goalId: number,
-    @Query('userId', ParseIntPipe) userId: number, // 이 부분은 인증을 강화하면 req.user.userId로 대체될 수 있습니다.
-  ) {
-    await this.goalService.deleteGoal(goalId, userId);
-    return { message: '목표가 성공적으로 삭제되었습니다.' };
+  async deleteGoal(@Param('goalId', ParseIntPipe) goalId: number, @getUser() user: UserEntity) {
+    await this.goalService.deleteGoal(goalId, user.userId);
+    return '목표 삭제 완료.';
   }
 
   // 응원 증가
@@ -155,12 +226,27 @@ export class GoalController {
   @ApiResponse({
     status: 200,
     description: '응원 증가',
-    type: CheerGoalDto,
+    type: CheerResponseDto,
   })
-  @Post(':goalId/cheer')
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '목표 삭제에 실패했습니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '응원할 목표가 존재하지 않습니다.',
+  })
+  @ApiBadRequestResponse({
+    description: '자신의 목표는 응원할 수 없습니다.',
+  })
+  @Get(':goalId/cheer')
   @UseGuards(AuthGuard('jwt'))
-  async cheerGoal(@Param('goalid', ParseIntPipe) goalId: number) {
-    return await this.goalService.cheerGoal(goalId);
+  async cheerGoal(@Param('goalId', ParseIntPipe) goalId: number, @getUser() user: UserEntity) {
+    return await this.goalService.cheerGoal(goalId, user.userId);
   }
 
   // 응원 삭제
@@ -171,12 +257,27 @@ export class GoalController {
   @ApiResponse({
     status: 200,
     description: '응원 감소',
-    type: CheerGoalDto,
+    type: CheerResponseDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiNotFoundResponse({
+    description: '응원할 목표가 존재하지 않습니다.',
+  })
+  @ApiBadRequestResponse({
+    description: '자신의 목표는 응원할 수 없습니다.',
   })
   @Delete(':goalId/cheer')
   @UseGuards(AuthGuard('jwt'))
-  async canncelCheerGoal(@Param('goalid', ParseIntPipe) goalId: number) {
-    return await this.goalService.cancelCheerGoal(goalId);
+  async cancelCheerGoal(
+    @Param('goalId', ParseIntPipe) goalId: number,
+    @getUser() user: UserEntity,
+  ) {
+    return await this.goalService.cancelCheerGoal(goalId, user.userId);
   }
 
   // 전체 누적 응원 수
@@ -187,30 +288,63 @@ export class GoalController {
   @ApiResponse({
     status: 200,
     description: '전체 누적 응원 수',
-    type: CheerResponseDto,
+    schema: {
+      type: 'object',
+      properties: {
+        totalCheerCount: {
+          type: 'number',
+          example: 7,
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '전체 응원 누적 수 조회에 실패했습니다.',
   })
   @Get('cheer/total')
   @UseGuards(AuthGuard('jwt'))
-  async getTotalCheerCount(@Req() req) {
-    const userId = req.user.userId;
-    const count = await this.goalService.totalCheerCount(userId);
+  async getTotalCheerCount(@getUser() user: UserEntity) {
+    const count = await this.goalService.totalCheerCount(user.userId);
     return { totalCheerCount: count };
   }
 
   // 오늘 누적 응원 수
   @ApiOperation({
-    summary: '응원 감소',
-    description: '응원 감소',
+    summary: '오늘 누적 응원 수',
+    description: '오늘 누적된 전체 응원 개수',
   })
   @ApiResponse({
     status: 200,
-    description: '응원 감소',
-    type: CheerResponseDto,
+    description: '오늘 누적된 전체 응원 개수',
+    schema: {
+      type: 'object',
+      properties: {
+        totalCheerCount: {
+          type: 'number',
+          example: 7,
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '오늘 응원 누적 수 조회에 실패했습니다.',
   })
   @Get('cheer/today')
   @UseGuards(AuthGuard('jwt'))
-  async getTodayCheerCount(@Req() req) {
-    const userId = req.user.userId;
-    return this.goalService.todayCheerCount(userId);
+  async getTodayCheerCount(@getUser() user: UserEntity) {
+    const count = this.goalService.todayCheerCount(user.userId);
+    return { todayCheerCount: count };
   }
 }

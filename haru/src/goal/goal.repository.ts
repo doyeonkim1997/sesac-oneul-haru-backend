@@ -1,11 +1,12 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/databases/prisma/prisma.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
-import { UpdateGoalDto } from './dto/update-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
+import { UpdateGoalDto } from './dto/update-goal.dto';
 
 import { CheerResponseDto } from './dto/cheer-response.dto';
 import { FilterGoalDto } from './dto/filter-goal.dto';
+import { GoalEntity } from './entity/goal.entity';
 
 @Injectable()
 export class GoalRepository {
@@ -150,6 +151,24 @@ export class GoalRepository {
     } catch {
       throw new InternalServerErrorException('목표 삭제에 실패했습니다.');
     }
+  }
+
+  // goalId로 목표 조회
+  async findGoalByGoalId(goalId: number): Promise<GoalEntity | null> {
+    return await this.prisma.goal.findFirst({
+      where: {
+        goalId,
+      },
+    });
+  }
+
+  // userId로 사용자 조회
+  async findUserByUserId(userId: number) {
+    return await this.prisma.user.findFirst({
+      where: {
+        userId,
+      },
+    });
   }
 
   // 응원 증가
