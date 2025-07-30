@@ -3,7 +3,7 @@ import { GoalRepository } from './goal.repository';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
-import { FindGoalFilterDto } from './dto/find-goal-filter.dto';
+import { FilterGoalDto } from './dto/filter-goal.dto';
 import { CheerResponseDto } from './dto/cheer-response.dto';
 
 @Injectable()
@@ -28,8 +28,8 @@ export class GoalService {
   }
 
   // 필터링 (변경 없음)
-  async goalFilter(filerDto: FindGoalFilterDto): Promise<FindGoalDto[]> {
-    return await this.goalRepository.goalFilter(filerDto);
+  async goalFilter(filterGoalDto: FilterGoalDto): Promise<FindGoalDto[]> {
+    return await this.goalRepository.goalFilter(filterGoalDto);
   }
 
   // 목표 수정 (userId를 통한 소유권 검증 로직은 유지)
