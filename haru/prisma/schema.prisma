@@ -58,24 +58,11 @@ model Image {
   user User?
 }
 
-// model Auth {
-//   authId       Int      @id @default(autoincrement())
-//   userId       Int
-//   authType     String
-//   identifier   String
-//   passwordHash String?   @map("password_hash")
-//   createdAt    DateTime  @default(now()) @map("created_at")
-
-//   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-//   @@unique([userId, authType], name: "uq_user_auth")
-// }
-
 model Bookmark {
   bookmarkId   Int     @id @default(autoincrement())  @map("bookmark_id")
   userId       Int     @map("user_id")
   goalId       Int     @map("goal_id")
-  isBookmarked Boolean @default(false)  @map("is_bookmarked")
+  // isBookmarked Boolean @default(false)  @map("is_bookmarked")
 
   // Relations
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)

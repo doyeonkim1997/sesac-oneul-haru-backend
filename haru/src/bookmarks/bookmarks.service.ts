@@ -1,10 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { BookmarksRepository } from './bookmarks.repository';
 import { BookmarkResponseDto } from './dto/bookmark-response.dto';
 import { CreateBookmarkDto } from './dto/create-bookmark.dto';
-import { UpdateBookmarkDto } from './dto/update-bookmark.dto';
 
 @Injectable()
 export class BookmarksService {
@@ -27,35 +26,35 @@ export class BookmarksService {
   }
 
   // 북마크 수정
-  async updateBookmark(
-    bookmarkId: number,
-    userId: number,
-    dto: UpdateBookmarkDto,
-  ): Promise<BookmarkResponseDto> {
-    const bookmark = await this.bookmarkRepository.findById(bookmarkId);
+  // async updateBookmark(
+  //   bookmarkId: number,
+  //   userId: number,
+  //   dto: UpdateBookmarkDto,
+  // ): Promise<BookmarkResponseDto> {
+  //   const bookmark = await this.bookmarkRepository.findById(bookmarkId);
 
-    if (!bookmark) {
-      throw new NotFoundException('수정할 북마크를 찾을 수 없습니다.');
-    }
+  //   if (!bookmark) {
+  //     throw new NotFoundException('수정할 북마크를 찾을 수 없습니다.');
+  //   }
 
-    // 북마크가 자신이 한 것인지 확인
-    validateLogin(bookmark.userId, userId);
+  //   // 북마크가 자신이 한 것인지 확인
+  //   validateLogin(bookmark.userId, userId);
 
-    return this.bookmarkRepository.updateBookmark(bookmarkId, dto);
-  }
+  //   return this.bookmarkRepository.updateBookmark(bookmarkId, dto);
+  // }
 
   // 북마크 삭제
-  async deleteBookmark(bookmarkId: number, userId: number): Promise<string> {
-    const bookmark = await this.bookmarkRepository.findById(bookmarkId);
+  // async deleteBookmark(bookmarkId: number, userId: number): Promise<string> {
+  //   const bookmark = await this.bookmarkRepository.findById(bookmarkId);
 
-    if (!bookmark) {
-      throw new NotFoundException('삭제할 북마크를 찾을 수 없습니다.');
-    }
+  //   if (!bookmark) {
+  //     throw new NotFoundException('삭제할 북마크를 찾을 수 없습니다.');
+  //   }
 
-    validateLogin(userId, bookmark.userId);
+  //   validateLogin(userId, bookmark.userId);
 
-    return this.bookmarkRepository.deleteBookmark(bookmarkId);
-  }
+  //   return this.bookmarkRepository.deleteBookmark(bookmarkId);
+  // }
 
   // 친구와 목표에 해당하는 북마크 조회
   async findByUserAndGoal(userId: number, goalId: number): Promise<BookmarkResponseDto | null> {

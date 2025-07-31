@@ -17,6 +17,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -48,6 +49,7 @@ export class UserController {
   @ApiUnauthorizedResponse({
     description: '로그인이 필요합니다.',
   })
+  @ApiBearerAuth()
   @Get('/email')
   @UseGuards(AuthGuard('jwt'))
   searchUserByEmail(@Query('search') search: string): Promise<FindUserDto[]> {
@@ -72,6 +74,7 @@ export class UserController {
   @ApiNotFoundResponse({
     description: '사용자를 찾을 수 없습니다.',
   })
+  @ApiBearerAuth()
   @Patch('/:id/profile')
   @UseInterceptors(FileInterceptor('file', multerOptions))
   @UseGuards(AuthGuard('jwt'))
@@ -109,6 +112,7 @@ export class UserController {
   @ApiBadRequestResponse({
     description: '비밀번호 일치 여부를 확인해주세요.',
   })
+  @ApiBearerAuth()
   @Patch('/:id/password')
   @UseGuards(AuthGuard('jwt'))
   updatePassword(
@@ -141,6 +145,7 @@ export class UserController {
   @ApiInternalServerErrorResponse({
     description: '회원 탈퇴 실패',
   })
+  @ApiBearerAuth()
   @Delete('/:id')
   @UseGuards(AuthGuard('jwt'))
   deleteUser(@getUser() user: UserEntity, @Param('id', ParseIntPipe) id: number): Promise<string> {

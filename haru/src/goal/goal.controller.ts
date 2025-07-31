@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -56,6 +57,7 @@ export class GoalController {
   @ApiInternalServerErrorResponse({
     description: '목표 생성에 실패했습니다.',
   })
+  @ApiBearerAuth()
   @Post('/')
   @UseGuards(AuthGuard('jwt'))
   async create(@Body() createGoalDto: CreateGoalDto, @getUser() user: UserEntity) {
@@ -84,6 +86,7 @@ export class GoalController {
   @ApiInternalServerErrorResponse({
     description: '목표 조회 중 오류가 발생했습니다.',
   })
+  @ApiBearerAuth()
   @Get(':goalId')
   @UseGuards(AuthGuard('jwt'))
   async findOne(
@@ -113,6 +116,7 @@ export class GoalController {
   @ApiInternalServerErrorResponse({
     description: '목표 목록 조회에 실패했습니다.',
   })
+  @ApiBearerAuth()
   @Get('/:userId/all')
   @UseGuards(AuthGuard('jwt'))
   async findAll(
@@ -141,6 +145,7 @@ export class GoalController {
   @ApiInternalServerErrorResponse({
     description: '목표 필터링에 실패했습니다.',
   })
+  @ApiBearerAuth()
   @Get('/:userId/filter')
   @UseGuards(AuthGuard('jwt'))
   async getFilteredGoals(
@@ -177,6 +182,7 @@ export class GoalController {
   @ApiNotFoundResponse({
     description: '수정 권한이 없는 목표이거나 목표를 찾을 수 없습니다.',
   })
+  @ApiBearerAuth()
   @Patch(':goalId')
   @UseGuards(AuthGuard('jwt'))
   async update(
@@ -211,6 +217,7 @@ export class GoalController {
   @ApiNotFoundResponse({
     description: '삭제할 목표가 존재하지 않습니다.',
   })
+  @ApiBearerAuth()
   @Delete(':goalId')
   @UseGuards(AuthGuard('jwt'))
   async deleteGoal(@Param('goalId', ParseIntPipe) goalId: number, @getUser() user: UserEntity) {
@@ -243,6 +250,7 @@ export class GoalController {
   @ApiBadRequestResponse({
     description: '자신의 목표는 응원할 수 없습니다.',
   })
+  @ApiBearerAuth()
   @Get(':goalId/cheer')
   @UseGuards(AuthGuard('jwt'))
   async cheerGoal(@Param('goalId', ParseIntPipe) goalId: number, @getUser() user: UserEntity) {
@@ -271,6 +279,7 @@ export class GoalController {
   @ApiBadRequestResponse({
     description: '자신의 목표는 응원할 수 없습니다.',
   })
+  @ApiBearerAuth()
   @Delete(':goalId/cheer')
   @UseGuards(AuthGuard('jwt'))
   async cancelCheerGoal(
@@ -307,6 +316,7 @@ export class GoalController {
   @ApiInternalServerErrorResponse({
     description: '전체 응원 누적 수 조회에 실패했습니다.',
   })
+  @ApiBearerAuth()
   @Get('cheer/total')
   @UseGuards(AuthGuard('jwt'))
   async getTotalCheerCount(@getUser() user: UserEntity) {
@@ -341,6 +351,7 @@ export class GoalController {
   @ApiInternalServerErrorResponse({
     description: '오늘 응원 누적 수 조회에 실패했습니다.',
   })
+  @ApiBearerAuth()
   @Get('cheer/today')
   @UseGuards(AuthGuard('jwt'))
   async getTodayCheerCount(@getUser() user: UserEntity) {
