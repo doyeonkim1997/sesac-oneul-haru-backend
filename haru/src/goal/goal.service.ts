@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { GoalRepository } from './goal.repository';
-import { CreateGoalDto } from './dto/create-goal.dto';
-import { UpdateGoalDto } from './dto/update-goal.dto';
-import { FindGoalDto } from './dto/find-goal.dto';
-import { FilterGoalDto } from './dto/filter-goal.dto';
-import { CheerResponseDto } from './dto/cheer-response.dto';
 import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
+import { CheerResponseDto } from './dto/cheer-response.dto';
+import { CreateGoalDto } from './dto/create-goal.dto';
+import { FilterGoalDto } from './dto/filter-goal.dto';
+import { FindGoalDto } from './dto/find-goal.dto';
+import { UpdateGoalDto } from './dto/update-goal.dto';
+import { GoalRepository } from './goal.repository';
 
 @Injectable()
 export class GoalService {
@@ -102,6 +102,39 @@ export class GoalService {
     }
 
     return this.goalRepository.cheerGoal(goalId);
+  }
+
+  // 목표 완료 / 미완료 상태 토글
+  async toggleIsCompleted(goalId: number): Promise<string> {
+    const findGoal = await this.goalRepository.findToggleInfoByGoalId(goalId);
+
+    this.logger.debug(`완료 상태 토글을 위한 service  시작 `);
+
+    if (!findGoal) {
+      throw new NotFoundException('목표를 찾을 수 없습니다.');
+    }
+
+    if (findGoal.isCompleted === true) {
+      await this.goalRepository.updateIsCompleted(
+        goalId,
+        false,
+        findGoal.content,
+        findGoal.category,
+      );
+      return '미완료 변경';
+    }
+
+    if (findGoal.isCompleted === false) {
+      await this.goalRepository.updateIsCompleted(
+        goalId,
+        true,
+        findGoal.content,
+        findGoal.category,
+      );
+      return '완료 변경';
+    }
+
+    return '완료 상태 변경';
   }
 
   // 응원 취소
