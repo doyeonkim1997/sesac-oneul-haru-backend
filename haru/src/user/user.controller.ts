@@ -125,6 +125,28 @@ export class UserController {
   }
 
   @ApiOperation({
+    summary: '사용자 등급업',
+    description: '완료된 목표가 10개면 SILVER, 50개면 GOLD, 100개면 DIAMOND',
+  })
+  @ApiResponse({
+    description: '등급업 상태 메시지.',
+    status: 200,
+    type: String,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiBearerAuth()
+  @Patch('/:id/tier')
+  @UseGuards(AuthGuard('jwt'))
+  updateTier(@Param('id', ParseIntPipe) id: number, @getUser() user: UserEntity): Promise<string> {
+    return this.userService.updateTier(id, user);
+  }
+
+  @ApiOperation({
     summary: '회원 탈퇴',
     description: '회원 탈퇴',
   })
