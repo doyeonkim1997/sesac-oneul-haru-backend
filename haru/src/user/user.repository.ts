@@ -87,6 +87,30 @@ export class UserRepository {
     return image;
   }
 
+  // 해당 사용자의 완료된 목표 개수
+  async findGoalCount(userId: number): Promise<number> {
+    const completedGoalCount = await this.prisma.goal.count({
+      where: {
+        userId,
+        isCompleted: true,
+      },
+    });
+
+    return completedGoalCount;
+  }
+
+  // 해당 사용자의 티어 업데이트
+  async updateUserTier(userId: number, tier: string): Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        userId,
+      },
+      data: {
+        tier,
+      },
+    });
+  }
+
   // 이미지 저장시 사용자 테이블 imageId 저장
   async updateImageId(userId: number, imageId: number): Promise<void> {
     await this.prisma.user.update({

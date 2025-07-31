@@ -13,6 +13,7 @@ import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
 import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
 import { UpdatePasswordDto } from './dto/update-password-dto';
 import { UserRepository } from './user.repository';
+import { Tier } from './enum/tier.emum';
 
 @Injectable()
 export class UserService {
@@ -101,6 +102,30 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     return await this.userRepository.updatePassword(findUser.userId, hashedPassword);
+  }
+
+  // 사용자 등급 변경
+  async updateTier(userId: number, user: UserEntity): Promise<string> {
+    validateLogin(userId, user.userId);
+
+    const goalCount = await this.userRepository.findGoalCount(userId);
+
+    if (goalCount >= 100) {
+      await this.userRepository.updateUserTier(userId, Tier.DIAMOND);
+      return `사용자의 등급이 ${Tier.DIAMOND}로 상승되었습니다.`;
+    }
+
+    if (goalCount >= 50) {
+      await this.userRepository.updateUserTier(userId, Tier.GOLD);
+      return `사용자의 등급이 ${Tier.GOLD}로 상승되었습니다.`;
+    }
+
+    if (goalCount >= 10) {
+      await this.userRepository.updateUserTier(userId, Tier.SILVER);
+      return `사용자의 등급이 ${Tier.SILVER}로 상승되었습니다.`;
+    }
+
+    return '사용자의 등급이 그대로입니다.';
   }
 
   // 회원 탈퇴
