@@ -9,7 +9,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -27,7 +26,6 @@ import { UserEntity } from 'src/user/entity/user.entity';
 import { getUser } from 'src/user/get-user-decorator';
 import { CheerResponseDto } from './dto/cheer-response.dto';
 import { CreateGoalDto } from './dto/create-goal.dto';
-import { FilterGoalDto } from './dto/filter-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { GoalService } from './goal.service';
@@ -127,38 +125,38 @@ export class GoalController {
   }
 
   // 필터링 (필요 X)
-  @ApiOperation({
-    summary: '목표 목록 필터링',
-    description: '목표 목록 필터링',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '전체/완료/미완료',
-    type: FilterGoalDto,
-  })
-  @ApiUnauthorizedResponse({
-    description: '로그인이 필요합니다.',
-  })
-  @ApiUnauthorizedResponse({
-    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
-  })
-  @ApiInternalServerErrorResponse({
-    description: '목표 필터링에 실패했습니다.',
-  })
-  @ApiBearerAuth()
-  @Get('/:userId/filter')
-  @UseGuards(AuthGuard('jwt'))
-  async getFilteredGoals(
-    @getUser() user: UserEntity,
-    @Param('userId', ParseIntPipe) userId: number,
-    @Query('status') status: 'all' | 'true' | 'false' = 'all',
-  ) {
-    const filterDto: FilterGoalDto = {
-      userId,
-      isCompleted: status === 'true' ? true : status === 'false' ? false : 'all',
-    };
-    return this.goalService.goalFilter(filterDto, userId, user);
-  }
+  // @ApiOperation({
+  //   summary: '목표 목록 필터링',
+  //   description: '목표 목록 필터링',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: '전체/완료/미완료',
+  //   type: FilterGoalDto,
+  // })
+  // @ApiUnauthorizedResponse({
+  //   description: '로그인이 필요합니다.',
+  // })
+  // @ApiUnauthorizedResponse({
+  //   description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  // })
+  // @ApiInternalServerErrorResponse({
+  //   description: '목표 필터링에 실패했습니다.',
+  // })
+  // @ApiBearerAuth()
+  // @Get('/:userId/filter')
+  // @UseGuards(AuthGuard('jwt'))
+  // async getFilteredGoals(
+  //   @getUser() user: UserEntity,
+  //   @Param('userId', ParseIntPipe) userId: number,
+  //   @Query('status') status: 'all' | 'true' | 'false' = 'all',
+  // ) {
+  //   const filterDto: FilterGoalDto = {
+  //     userId,
+  //     isCompleted: status === 'true' ? true : status === 'false' ? false : 'all',
+  //   };
+  //   return this.goalService.goalFilter(filterDto, userId, user);
+  // }
 
   // 사용자 목표 수정
   @ApiOperation({
@@ -185,7 +183,7 @@ export class GoalController {
   @ApiBearerAuth()
   @Patch(':goalId')
   @UseGuards(AuthGuard('jwt'))
-  async update(
+  async updateGoal(
     @Param('goalId', ParseIntPipe) goalId: number,
     @Body() updateGoalDto: UpdateGoalDto,
     @getUser() user: UserEntity,
