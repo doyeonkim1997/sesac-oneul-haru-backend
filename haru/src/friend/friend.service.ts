@@ -6,6 +6,7 @@ import { FindFriendDto } from './dto/find-friend-dto';
 import { FriendRequestStatus } from './enum/friend-request-status.enum';
 import { FriendRepository } from './friend.repository';
 import { FriendInfoDto } from './dto/friend-info-dto';
+import { FriendGoalsDto } from './dto/friend-goals-dto';
 
 @Injectable()
 export class FriendService {
@@ -70,7 +71,8 @@ export class FriendService {
   }
 
   // userId로 친구 목록 조회
-  async getFriendsByUserId(userId: number): Promise<FindFriendDto[]> {
+  async getFriendsByUserId(userId: number, user: UserEntity): Promise<FindFriendDto[]> {
+    validateLogin(userId, user.userId);
     return await this.friendRepository.findAllFriendsByUserId(userId);
   }
 
@@ -79,13 +81,24 @@ export class FriendService {
     // 로그인 검사
     validateLogin(userId, user.userId);
 
-    const findFriend = await this.friendRepository.findFriendByUserid(friendId);
+    const findFriend = await this.friendRepository.findFriendByUserId(friendId);
 
     if (!findFriend) {
       throw new NotFoundException('존재하지 않는 친구입니다.');
     }
 
     return findFriend;
+  }
+
+  // 친구 목표 목록 조회
+  async showFriendGoals(
+    user: UserEntity,
+    userId: number,
+    friendId: number,
+  ): Promise<FriendGoalsDto[]> {
+    validateLogin(userId, user.userId);
+
+    return await this.friendRepository.findFriendGoalsByFriendId(friendId);
   }
 
   async removeFriend(requestId: number, user: UserEntity, userId: number) {

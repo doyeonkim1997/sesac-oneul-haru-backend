@@ -4,6 +4,7 @@ import { FriendRequestStatus } from './enum/friend-request-status.enum';
 import { FindFriendDto } from './dto/find-friend-dto';
 import { FriendRequestDto } from './dto/friend-request-dto';
 import { FriendInfoDto } from './dto/friend-info-dto';
+import { FriendGoalsDto } from './dto/friend-goals-dto';
 
 @Injectable()
 export class FriendRepository {
@@ -58,7 +59,7 @@ export class FriendRepository {
   }
 
   // 사용자Id로 친구 정보 조회
-  async findFriendByUserid(userId: number): Promise<FriendInfoDto | null> {
+  async findFriendByUserId(userId: number): Promise<FriendInfoDto | null> {
     const friend = await this.prisma.user.findFirst({
       where: {
         userId,
@@ -77,6 +78,25 @@ export class FriendRepository {
     });
 
     return friend;
+  }
+
+  // 친구id로 친구의 모든 목표 목록 조회
+  async findFriendGoalsByFriendId(friendId: number): Promise<FriendGoalsDto[]> {
+    return await this.prisma.goal.findMany({
+      where: {
+        userId: friendId,
+      },
+      select: {
+        goalId: true,
+        content: true,
+        category: true,
+        isCompleted: true,
+        isDeleted: true,
+        cheerCount: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   // 친구 요청 상태 업데이트
