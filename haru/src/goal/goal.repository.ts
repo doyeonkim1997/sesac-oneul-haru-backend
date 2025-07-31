@@ -67,13 +67,26 @@ export class GoalRepository {
         data: {
           content: updateGoalDto.content,
           category: updateGoalDto.category,
-          isCompleted: updateGoalDto.isCompleted,
         },
       });
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('목표 수정에 실패했습니다.');
     }
+  }
+
+  // 완료 여부 변경
+  async updateIsCompleted(goalId: number, isCompleted: boolean, content: string, category: string) {
+    await this.prisma.goal.update({
+      where: {
+        goalId,
+      },
+      data: {
+        isCompleted,
+        content,
+        category,
+      },
+    });
   }
 
   // 친구 목록 (변경 없음)
@@ -158,6 +171,24 @@ export class GoalRepository {
     return await this.prisma.goal.findFirst({
       where: {
         goalId,
+      },
+    });
+  }
+
+  // goalId로 완료 상태 업데이트를 위한 정보 조회
+  async findToggleInfoByGoalId(goalId: number): Promise<{
+    content: string;
+    category: string;
+    isCompleted: boolean;
+  } | null> {
+    return await this.prisma.goal.findFirst({
+      where: {
+        goalId,
+      },
+      select: {
+        category: true,
+        content: true,
+        isCompleted: true,
       },
     });
   }

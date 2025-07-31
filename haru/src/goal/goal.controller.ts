@@ -163,7 +163,7 @@ export class GoalController {
   // 사용자 목표 수정
   @ApiOperation({
     summary: '목표 수정',
-    description: '목표 수정',
+    description: '목표 수정, content, category',
   })
   @ApiResponse({
     status: 200,
@@ -196,6 +196,33 @@ export class GoalController {
     await this.goalService.updateGoal(goalId, updateGoalDto, user.userId);
     this.logger.debug(`${goal.content} 변경되는 목표 확인 `);
     return '목표 수정 완료';
+  }
+
+  //완료 상태 토글
+  @ApiOperation({
+    summary: '완료 상태 토글',
+    description: 'isCompleted를 true면 false로 false면 true로 변경',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '완료 상태 변경 여부',
+    type: String,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiNotFoundResponse({
+    description: '목표를 찾을 수 없습니다.',
+  })
+  @ApiBearerAuth()
+  @Patch('/:goalId/toggle')
+  @UseGuards(AuthGuard('jwt'))
+  toggleIsCompleted(@Param('goalId', ParseIntPipe) goalId: number) {
+    this.logger.debug(`완료 상태 토글 시작`);
+    return this.goalService.toggleIsCompleted(goalId);
   }
 
   // 삭제(소프트 딜리트)
