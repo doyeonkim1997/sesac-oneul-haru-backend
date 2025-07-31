@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <style></style>
+  <body>
+    sse test
+  </body>
+  <script>
+    var evtSource = new EventSource('sse');
+    evtSource.onmessage = function (e) {
+      console.log(e);
+    };
+  </script>
+</html>

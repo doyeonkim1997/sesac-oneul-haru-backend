@@ -237,4 +237,18 @@ export class GoalRepository {
       throw new InternalServerErrorException('오늘 응원 누적 수 조회에 실패했습니다.');
     }
   }
+  async findIncompleteGoal(todayStart: Date, todayEnd: Date) {
+    return await this.prisma.goal.findMany({
+      where: {
+        isCompleted: false,
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+      },
+      include: {
+        user: true,
+      },
+    });
+  }
 }

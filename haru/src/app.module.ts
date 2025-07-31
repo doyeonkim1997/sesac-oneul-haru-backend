@@ -9,6 +9,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { FriendModule } from './friend/friend.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { join } from 'path';
     BookmarksModule,
     MailModule,
     FriendModule,
+    NotificationModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/',
