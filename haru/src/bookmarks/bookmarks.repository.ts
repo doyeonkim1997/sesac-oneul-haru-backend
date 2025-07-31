@@ -1,5 +1,4 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { Bookmark } from '@prisma/client';
 import { PrismaService } from '../databases/prisma/prisma.service';
 import { BookmarkResponseDto } from './dto/bookmark-response.dto';
 
@@ -14,7 +13,6 @@ export class BookmarksRepository {
         data: {
           userId,
           goalId,
-          isBookmarked: true,
         },
       });
       return '북마크 생성';
@@ -32,11 +30,16 @@ export class BookmarksRepository {
           bookmarkId: true,
           userId: true,
           goalId: true,
-          isBookmarked: true,
+          goal: {
+            select: {
+              content: true,
+              category: true,
+              isCompleted: true,
+            },
+          },
         },
       });
-      if (!bookmark) return null;
-      return this.toDto(bookmark);
+      return bookmark;
     } catch {
       throw new InternalServerErrorException('북마크 조회에 실패했습니다.');
     }
@@ -54,35 +57,19 @@ export class BookmarksRepository {
           bookmarkId: true,
           userId: true,
           goalId: true,
-          isBookmarked: true,
+          goal: {
+            select: {
+              content: true,
+              category: true,
+              isCompleted: true,
+            },
+          },
         },
       });
 
       return bookmark;
     } catch {
       throw new InternalServerErrorException('북마크 조회에 실패했습니다.');
-    }
-  }
-
-  // 북마크 수정
-  async updateBookmark(
-    bookmarkId: number,
-    data: Partial<{ isBookmarked: boolean }>,
-  ): Promise<BookmarkResponseDto> {
-    try {
-      const bookmark = await this.prisma.bookmark.update({
-        where: { bookmarkId },
-        data,
-        select: {
-          bookmarkId: true,
-          userId: true,
-          goalId: true,
-          isBookmarked: true,
-        },
-      });
-      return this.toDto(bookmark);
-    } catch {
-      throw new NotFoundException('수정할 북마크를 찾을 수 없습니다.');
     }
   }
 
@@ -95,7 +82,6 @@ export class BookmarksRepository {
           bookmarkId: true,
           userId: true,
           goalId: true,
-          isBookmarked: true,
         },
       });
       return '북마크 삭제';
@@ -108,12 +94,11 @@ export class BookmarksRepository {
   async findAllByUser(userId: number): Promise<BookmarkResponseDto[]> {
     try {
       const bookmarks = await this.prisma.bookmark.findMany({
-        where: { userId, isBookmarked: true },
+        where: { userId },
         select: {
           bookmarkId: true,
           userId: true,
           goalId: true,
-          isBookmarked: true,
           goal: {
             select: {
               content: true,
@@ -124,18 +109,9 @@ export class BookmarksRepository {
         },
       });
 
-      return bookmarks.map((bookmark) => this.toDto(bookmark));
+      return bookmarks;
     } catch {
       throw new InternalServerErrorException('북마크 목록 조회에 실패했습니다.');
     }
-  }
-
-  private toDto(bookmark: Bookmark): BookmarkResponseDto {
-    return {
-      bookmarkId: bookmark.bookmarkId,
-      userId: bookmark.userId,
-      goalId: bookmark.goalId,
-      isBookmarked: bookmark.isBookmarked,
-    };
   }
 }

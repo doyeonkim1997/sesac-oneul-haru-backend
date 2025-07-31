@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsBoolean } from 'class-validator';
+import { IsInt } from 'class-validator';
 export class BookmarkEntity {
   @ApiProperty({
     type: Number,
@@ -27,13 +27,4 @@ export class BookmarkEntity {
   })
   @IsInt()
   goalId: number;
-
-  @ApiProperty({
-    type: Boolean,
-    description: '북마크 여부',
-    example: true,
-    required: true,
-  })
-  @IsBoolean()
-  isBookmarked: boolean;
 }

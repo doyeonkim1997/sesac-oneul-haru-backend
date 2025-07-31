@@ -1,7 +1,9 @@
 import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -39,10 +41,31 @@ export class BookmarksController {
   // }
 
   // 북마크 토글
+  @ApiOperation({
+    summary: '북마크 토글',
+    description: '북마크 토글을 눌러 북마크 상태 업데이트.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: '북마크 토글 상태 (북마크 생성 완료 / 북마크 삭제 완료)',
+    type: String,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiUnauthorizedResponse({
+    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '삭제할 북마크를 찾을 수 없습니다.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '북마크 생성에 실패했습니다.',
+  })
+  @ApiBearerAuth()
   @Get('/:goalId')
   @UseGuards(AuthGuard('jwt'))
   async toggleBookmark(
-    // @Body() createBookmarkDto: CreateBookmarkDto,
     @Param('goalId', ParseIntPipe) goalId: number,
     @getUser() user: UserEntity,
   ): Promise<string> {
@@ -69,6 +92,7 @@ export class BookmarksController {
   @ApiUnauthorizedResponse({
     description: '해당 사용자가 로그인한 사용자가 아닙니다.',
   })
+  @ApiBearerAuth()
   @Get(':userId/all')
   @UseGuards(AuthGuard('jwt'))
   async findAllByUser(
