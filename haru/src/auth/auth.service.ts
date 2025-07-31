@@ -5,22 +5,21 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
+import { MailRepository } from 'src/mail/mail.repository';
+import { UserRepository } from 'src/user/user.repository';
+import { UserService } from 'src/user/user.service';
 import { AuthRepository } from './auth.repository';
+import { EmailCheckDto } from './dto/email-check-dto';
+import { EmailLoginDto } from './dto/email-login-dto';
+import { EmailSignUpDto } from './dto/email-signup-dto';
+import { FindUserInfoDto } from './dto/find-user-info-dto';
+import { AuthType } from './enum/auth-type';
 import {
   IAuthServiceSocialLoginInput,
   IAuthServiceSocialLoginOutput,
 } from './interfaces/iauth-service-social-login';
-import { JwtService } from '@nestjs/jwt';
-import { AuthType } from './enum/auth-type';
-import * as bcrypt from 'bcryptjs';
-import { EmailLoginDto } from './dto/email-login-dto';
-import { MailRepository } from 'src/mail/mail.repository';
-import { EmailSignUpDto } from './dto/email-signup-dto';
-import { EmailCheckDto } from './dto/email-check-dto';
-import { RefreshTokenDto } from './dto/refresh-token-dto';
-import { FindUserInfoDto } from './dto/find-user-info-dto';
-import { UserRepository } from 'src/user/user.repository';
-import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -203,8 +202,7 @@ export class AuthService {
   }
 
   // accessToken 재발급용
-  async refresh(refreshTokenDto: RefreshTokenDto): Promise<{ accessToken: string }> {
-    const { refreshToken } = refreshTokenDto;
+  async refresh(refreshToken: string): Promise<{ accessToken: string }> {
     this.logger.debug('refresh 메서드 시작');
 
     const decodedRefreshToken = await this.jwtService.verify(refreshToken, {

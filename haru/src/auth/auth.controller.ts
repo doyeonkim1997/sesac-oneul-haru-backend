@@ -6,14 +6,13 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { getUser } from 'src/user/get-user-decorator';
 import { AuthService } from './auth.service';
 import { EmailCheckDto } from './dto/email-check-dto';
 import { EmailLoginDto } from './dto/email-login-dto';
 import { EmailSignUpDto } from './dto/email-signup-dto';
-import { RefreshTokenDto } from './dto/refresh-token-dto';
 import { AuthType } from './enum/auth-type';
 import { GoogleAuthGuard } from './guards/google-auth-guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh-guard';
@@ -243,10 +242,12 @@ export class AuthController {
   })
   @Post('/refresh')
   async refresh(
-    @Body() refreshTokenDto: RefreshTokenDto,
+    @Req() req: Request,
     // @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    const newAccessToken = await this.authService.refresh(refreshTokenDto);
+    const refreshToken = req.cookies['refreshToken'];
+    this.logger.debug(`refreshToken 확인 : ${refreshToken}`);
+    const newAccessToken = await this.authService.refresh(refreshToken);
 
     // res.cookie('accessToken', newAccessToken.accessToken, { httpOnly: true });
 
