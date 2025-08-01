@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import * as express from 'express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,6 +25,10 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
+
+  // 정적 파일 제공 설정
+  app.use('/image', express.static(join(__dirname, '..', 'public', 'image')));
+  // 예: http://localhost:3000/image/파일이름 으로 접근 가능
 
   // Swagger 관련 설정
   const options = new DocumentBuilder()
