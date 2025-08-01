@@ -74,6 +74,7 @@ export class AuthController {
     // return { accessToken };
     // 프론트 주소로 리다이렉트
     // 리프레시 토큰을 전달했으로 accessToken을 새로 받음
+    this.logger.debug('카카오 로그인 시작');
     res.redirect(`${process.env.FRONT_ADDRESS!}/main`);
   }
 
