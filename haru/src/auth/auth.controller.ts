@@ -71,7 +71,7 @@ export class AuthController {
 
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
-    res.send('요청 끝');
+    res.send('<script>window.close()</script>');
   }
 
   // 구글 로그인 창 이동
@@ -118,7 +118,7 @@ export class AuthController {
 
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
-    res.send('요청 끝');
+    res.send('<script>window.close()</script>');
   }
 
   // 네이버 로그인 창 이동
@@ -166,7 +166,7 @@ export class AuthController {
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    res.send('요청 끝');
+    res.send('<script>window.close()</script>');
   }
 
   @ApiOperation({
