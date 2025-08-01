@@ -56,7 +56,7 @@ export class GoalRepository {
 
   // 목표 수정
   async updateGoal(goalId: number, updateGoalDto: UpdateGoalDto): Promise<UpdateGoalDto> {
-    const { content, category, isCompleted } = updateGoalDto;
+    const { content, category } = updateGoalDto;
     try {
       // 업데이트 전 존재 여부 확인
       const existingGoal = await this.prisma.goal.findUnique({
@@ -70,7 +70,6 @@ export class GoalRepository {
           content,
           category,
           updatedAt: new Date(),
-          isCompleted,
         },
       });
     } catch (error) {
