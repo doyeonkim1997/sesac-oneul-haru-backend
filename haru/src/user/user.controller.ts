@@ -4,8 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -68,23 +66,19 @@ export class UserController {
   @ApiUnauthorizedResponse({
     description: '로그인이 필요합니다.',
   })
-  @ApiUnauthorizedResponse({
-    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
-  })
   @ApiNotFoundResponse({
     description: '사용자를 찾을 수 없습니다.',
   })
   @ApiBearerAuth()
-  @Patch('/:id/profile')
+  @Patch('/profile')
   @UseInterceptors(FileInterceptor('file', multerOptions))
   @UseGuards(AuthGuard('jwt'))
   updateNickName(
-    @Param('id', ParseIntPipe) id: number,
     @getUser() user: UserEntity,
     @UploadedFile() file: Express.Multer.File,
     @Body() updateNickNameImageDto: UpdateNickNameImageDto,
   ): string {
-    this.userService.updateNickNameAndImage(id, user, file, updateNickNameImageDto);
+    this.userService.updateNickNameAndImage(user, file, updateNickNameImageDto);
     return '사용자 프로필 수정 완료.';
   }
 
@@ -100,9 +94,6 @@ export class UserController {
   @ApiUnauthorizedResponse({
     description: '로그인이 필요합니다.',
   })
-  @ApiUnauthorizedResponse({
-    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
-  })
   @ApiNotFoundResponse({
     description: '사용자를 찾을 수 없습니다.',
   })
@@ -113,14 +104,13 @@ export class UserController {
     description: '비밀번호 일치 여부를 확인해주세요.',
   })
   @ApiBearerAuth()
-  @Patch('/:id/password')
+  @Patch('/password')
   @UseGuards(AuthGuard('jwt'))
   updatePassword(
-    @Param('id', ParseIntPipe) id: number,
     @getUser() user: UserEntity,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ): string {
-    this.userService.updatePassword(id, user, updatePasswordDto);
+    this.userService.updatePassword(user, updatePasswordDto);
     return '사용자 비밀번호 수정 완료.';
   }
 
@@ -136,14 +126,11 @@ export class UserController {
   @ApiUnauthorizedResponse({
     description: '로그인이 필요합니다.',
   })
-  @ApiUnauthorizedResponse({
-    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
-  })
   @ApiBearerAuth()
-  @Patch('/:id/tier')
+  @Patch('/tier')
   @UseGuards(AuthGuard('jwt'))
-  updateTier(@Param('id', ParseIntPipe) id: number, @getUser() user: UserEntity): Promise<string> {
-    return this.userService.updateTier(id, user);
+  updateTier(@getUser() user: UserEntity): Promise<string> {
+    return this.userService.updateTier(user);
   }
 
   @ApiOperation({
@@ -158,9 +145,6 @@ export class UserController {
   @ApiUnauthorizedResponse({
     description: '로그인이 필요합니다.',
   })
-  @ApiUnauthorizedResponse({
-    description: '해당 사용자가 로그인한 사용자가 아닙니다.',
-  })
   @ApiNotFoundResponse({
     description: '사용자를 찾을 수 없습니다.',
   })
@@ -168,10 +152,10 @@ export class UserController {
     description: '회원 탈퇴 실패',
   })
   @ApiBearerAuth()
-  @Delete('/:id')
+  @Delete('/delete')
   @UseGuards(AuthGuard('jwt'))
-  deleteUser(@getUser() user: UserEntity, @Param('id', ParseIntPipe) id: number): Promise<string> {
-    return this.userService.deleteUser(id, user);
+  deleteUser(@getUser() user: UserEntity): Promise<string> {
+    return this.userService.deleteUser(user);
   }
 
   // 인증정보 불러오기 테스트용 API

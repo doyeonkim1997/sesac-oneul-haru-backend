@@ -6,14 +6,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
 import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
 import { UpdatePasswordDto } from './dto/update-password-dto';
-import { UserRepository } from './user.repository';
 import { Tier } from './enum/tier.emum';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
@@ -29,7 +28,6 @@ export class UserService {
 
   // 사용자 닉네임 수정
   async updateNickNameAndImage(
-    userId: number,
     user: UserEntity,
     file: Express.Multer.File,
     updateNickNameImageDto: UpdateNickNameImageDto,
@@ -45,16 +43,13 @@ export class UserService {
 
     imageUrl = file.path.replace(/\\/g, '/').replace(/^public/, '');
 
-    // 로그인 검사
-    validateLogin(userId, user.userId);
-
-    const findUser = await this.userRepository.findUserByUserIdForUpdate(userId);
+    const findUser = await this.userRepository.findUserByUserIdForUpdate(user.userId);
 
     if (!findUser) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    await this.uploadUserImage(userId, imageUrl);
+    await this.uploadUserImage(user.userId, imageUrl);
 
     // 이미지 Url이 있을 경우
     // if (imageUrl) {
@@ -75,16 +70,12 @@ export class UserService {
 
   // 사용자 비밀번호 수정
   async updatePassword(
-    userId: number,
     user: UserEntity,
     updatePasswordDto: UpdatePasswordDto,
   ): Promise<UpdateOutputUserInfoDto> {
     const { currentPassword, newPassword, confirmPassword } = updatePasswordDto;
 
-    // 로그인 검사
-    validateLogin(userId, user.userId);
-
-    const findUser = await this.userRepository.findUserByUserIdForUpdate(userId);
+    const findUser = await this.userRepository.findUserByUserIdForUpdate(user.userId);
 
     if (!findUser) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
@@ -105,23 +96,21 @@ export class UserService {
   }
 
   // 사용자 등급 변경
-  async updateTier(userId: number, user: UserEntity): Promise<string> {
-    validateLogin(userId, user.userId);
-
-    const goalCount = await this.userRepository.findGoalCount(userId);
+  async updateTier(user: UserEntity): Promise<string> {
+    const goalCount = await this.userRepository.findGoalCount(user.userId);
 
     if (goalCount >= 100) {
-      await this.userRepository.updateUserTier(userId, Tier.DIAMOND);
+      await this.userRepository.updateUserTier(user.userId, Tier.DIAMOND);
       return `사용자의 등급이 ${Tier.DIAMOND}로 상승되었습니다.`;
     }
 
     if (goalCount >= 50) {
-      await this.userRepository.updateUserTier(userId, Tier.GOLD);
+      await this.userRepository.updateUserTier(user.userId, Tier.GOLD);
       return `사용자의 등급이 ${Tier.GOLD}로 상승되었습니다.`;
     }
 
     if (goalCount >= 10) {
-      await this.userRepository.updateUserTier(userId, Tier.SILVER);
+      await this.userRepository.updateUserTier(user.userId, Tier.SILVER);
       return `사용자의 등급이 ${Tier.SILVER}로 상승되었습니다.`;
     }
 
@@ -129,23 +118,16 @@ export class UserService {
   }
 
   // 회원 탈퇴
-  async deleteUser(userId: number, user: UserEntity): Promise<string> {
-    this.logger.debug(`userId: ${userId}이고 user는 ${user.userId}`);
-    this.logger.debug(` 불린 값 : ${user.userId !== userId}`);
-    this.logger.debug(`userId type: ${typeof userId}, user.userId type: ${typeof user.userId}`);
-
-    // 로그인 검사
-    validateLogin(userId, user.userId);
-
+  async deleteUser(user: UserEntity): Promise<string> {
     this.logger.debug(`회원탈퇴 service 실행`);
 
-    const findUser = await this.userRepository.findUserByUserIdForUpdate(userId);
+    const findUser = await this.userRepository.findUserByUserIdForUpdate(user.userId);
 
     if (!findUser) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    const isDeleted = await this.userRepository.deleteUser(userId);
+    const isDeleted = await this.userRepository.deleteUser(user.userId);
 
     if (!isDeleted) {
       throw new InternalServerErrorException('회원 탈퇴 실패');
