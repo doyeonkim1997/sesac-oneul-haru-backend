@@ -14,7 +14,7 @@ export class GoalService {
   constructor(private readonly goalRepository: GoalRepository) {}
 
   // 목표 생성 (변경 없음)
-  async createGoal(createGoalDto: CreateGoalDto, userId: number): Promise<CreateGoalDto | null> {
+  async createGoal(createGoalDto: CreateGoalDto, userId: number): Promise<CreateGoalDto> {
     const findUser = await this.goalRepository.findUserByUserId(userId);
 
     if (!findUser) {
