@@ -7,6 +7,7 @@ import { FriendRequestStatus } from './enum/friend-request-status.enum';
 import { FriendRepository } from './friend.repository';
 import { FriendInfoDto } from './dto/friend-info-dto';
 import { FriendGoalsDto } from './dto/friend-goals-dto';
+import { FriendRequestDto } from './dto/friend-request-dto';
 
 @Injectable()
 export class FriendService {
@@ -75,6 +76,11 @@ export class FriendService {
     return await this.friendRepository.findAllFriendsByUserId(user.userId);
   }
 
+  // userId로 모든 친구요청 조회
+  async findAllFriendRequests(userId: number): Promise<FriendRequestDto[]> {
+    return await this.friendRepository.findAllFriendRequests(userId);
+  }
+
   // 친구 프로필 정보 조회
   async showFriendInfo(friendId: number): Promise<FriendInfoDto> {
     const findFriend = await this.friendRepository.findFriendByUserId(friendId);
@@ -91,7 +97,7 @@ export class FriendService {
     if (user.userId === friendId) {
       throw new BadRequestException('친구가 아닌 사용자를 조회했습니다.');
     }
-    return await this.friendRepository.findFriendGoalsByFriendId(friendId);
+    return await this.friendRepository.findFriendGoalsByFriendId(friendId, user.userId);
   }
 
   // 친구 삭제

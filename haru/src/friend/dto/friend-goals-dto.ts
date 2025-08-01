@@ -40,15 +40,6 @@ export class FriendGoalsDto {
   isCompleted: boolean;
 
   @ApiProperty({
-    type: Boolean,
-    description: '삭제 여부',
-    example: false,
-    required: true,
-  })
-  @IsBoolean()
-  isDeleted: boolean;
-
-  @ApiProperty({
     type: Number,
     description: '응원 수',
     example: 10,
@@ -56,6 +47,12 @@ export class FriendGoalsDto {
   })
   @IsInt()
   cheerCount: number;
+
+  @ApiProperty({
+    example: true,
+    description: '현재 로그인한 유저가 북마크했는지 여부',
+  })
+  isBookmarked: boolean;
 
   @ApiProperty({
     type: Date,

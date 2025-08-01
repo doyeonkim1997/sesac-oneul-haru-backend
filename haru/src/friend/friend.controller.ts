@@ -14,6 +14,7 @@ import { FindFriendDto } from './dto/find-friend-dto';
 import { FriendService } from './friend.service';
 import { FriendGoalsDto } from './dto/friend-goals-dto';
 import { FriendInfoDto } from './dto/friend-info-dto';
+import { FriendRequestDto } from './dto/friend-request-dto';
 
 @Controller('friend')
 export class FriendController {
@@ -38,6 +39,24 @@ export class FriendController {
   @Get('/friends')
   findFriendsByUserId(@getUser() user: UserEntity): Promise<FindFriendDto[]> {
     return this.friendService.getFriendsByUserId(user);
+  }
+
+  @ApiOperation({
+    summary: '사용자의 친구 요청 목록 조회',
+    description: '전체 친구 요청 목록을 조회하며 요청이 없으면 0의 배열을 반환.',
+  })
+  @ApiResponse({
+    type: FriendRequestDto,
+    isArray: true,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/requests')
+  findAllFriendRequests(@getUser() user: UserEntity): Promise<FriendRequestDto[]> {
+    return this.friendService.findAllFriendRequests(user.userId);
   }
 
   @ApiOperation({

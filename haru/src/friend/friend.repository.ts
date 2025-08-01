@@ -80,23 +80,62 @@ export class FriendRepository {
     return friend;
   }
 
-  // 친구id로 친구의 모든 목표 목록 조회
-  async findFriendGoalsByFriendId(friendId: number): Promise<FriendGoalsDto[]> {
-    return await this.prisma.goal.findMany({
+  // 모든 친구요청 목록 조회
+  async findAllFriendRequests(userId: number): Promise<FriendRequestDto[]> {
+    const requests = await this.prisma.friendRequest.findMany({
       where: {
-        userId: friendId,
+        receiverId: userId, // 요청 받은 사람의 친구 요청 목록
+        status: 'PENDING', // 대기중인 요청목록만 필터링
       },
       select: {
+        receiverId: true,
+        userId: true,
+        requestId: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+
+    return requests;
+  }
+
+  // 친구id로 친구의 모든 목표 목록 조회
+  async findFriendGoalsByFriendId(friendId: number, userId: number): Promise<FriendGoalsDto[]> {
+    const result = await this.prisma.goal.findMany({
+      where: {
+        userId: friendId,
+        isDeleted: false,
+      },
+      select: {
+        bookmarks: {
+          where: {
+            userId,
+          },
+          select: {
+            bookmarkId: true,
+          },
+        },
+
         goalId: true,
         content: true,
         category: true,
         isCompleted: true,
-        isDeleted: true,
         cheerCount: true,
         createdAt: true,
         updatedAt: true,
       },
     });
+
+    return result.map((goal) => ({
+      goalId: goal.goalId,
+      isBookmarked: goal.bookmarks.length > 0,
+      content: goal.content,
+      category: goal.category,
+      createdAt: goal.createdAt,
+      updatedAt: goal.updatedAt,
+      isCompleted: goal.isCompleted,
+      cheerCount: goal.cheerCount,
+    }));
   }
 
   // 친구 요청 상태 업데이트
