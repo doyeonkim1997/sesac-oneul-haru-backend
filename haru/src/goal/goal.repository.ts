@@ -68,6 +68,7 @@ export class GoalRepository {
           content: updateGoalDto.content,
           category: updateGoalDto.category,
           updatedAt: new Date(),
+          isCompleted: updateGoalDto.isCompleted,
         },
       });
     } catch (error) {
