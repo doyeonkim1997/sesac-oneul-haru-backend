@@ -25,7 +25,16 @@ export class AuthController {
   private logger = new Logger('AuthController');
   constructor(private readonly authService: AuthService) {}
 
-  // 카카오 로그인 창 이동 및 콜백
+  // 카카오 로그인 창 이동
+  @ApiOperation({
+    summary: '카카오 로그인/회원가입',
+    description: '카카오 로그인 버튼을 누르면 로그인 창으로 이동',
+  })
+  @UseGuards(KakaoAuthGuard)
+  @Get('login/kakao')
+  async kakaoLogin(): Promise<void> {}
+
+  // 카카오 로그인 콜백
   @ApiOperation({
     summary: '카카오 로그인/회원가입',
     description: '카카오 로그인 버튼을 누르면 회원가입',
@@ -46,11 +55,11 @@ export class AuthController {
     description: '이미 가입된 상태입니다.',
   })
   @UseGuards(KakaoAuthGuard)
-  @Get('login/kakao')
-  async kakaoLogin(
+  @Get('/kakao/callback')
+  async kakaoCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string }> {
+    @Res() res: Response,
+  ): Promise<void> {
     const { accessToken, refreshToken } = await this.authService.kakaoLogin({
       socialLoginDto: socialUser,
     });
@@ -62,7 +71,10 @@ export class AuthController {
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    return { accessToken };
+    // return { accessToken };
+    // 프론트 주소로 리다이렉트
+    // 리프레시 토큰을 전달했으로 accessToken을 새로 받음
+    res.redirect(`${process.env.FRONT_ADDRESS!}/main`);
   }
 
   // 구글 로그인 창 이동
@@ -98,8 +110,8 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string }> {
+    @Res() res: Response,
+  ): Promise<void> {
     const { accessToken, refreshToken } = await this.authService.googleLogin({
       socialLoginDto: socialUser,
     });
@@ -110,13 +122,23 @@ export class AuthController {
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    return { accessToken };
+    // return { accessToken };
+    res.redirect(`${process.env.FRONT_ADDRESS!}/main`);
   }
 
-  // 네이버 로그인 창 이동 및 콜백
+  // 네이버 로그인 창 이동
   @ApiOperation({
     summary: '네이버 로그인/회원가입',
-    description: '네이버 로그인 버튼을 누르면 회원가입',
+    description: '네이버 로그인 버튼을 누르면 로그인 창으로 이동',
+  })
+  @UseGuards(NaverAuthGuard)
+  @Get('login/naver')
+  async naverLogin(): Promise<void> {}
+
+  // 네이버 로그인 콜백
+  @ApiOperation({
+    summary: '네이버 로그인 콜백',
+    description: '네이버 로그인 콜백 주소',
   })
   @ApiResponse({
     description: 'JWT accessToken 반환',
@@ -134,11 +156,11 @@ export class AuthController {
     description: '이미 가입된 상태입니다.',
   })
   @UseGuards(NaverAuthGuard)
-  @Get('login/naver')
+  @Get('/naver/callback')
   async naverCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string }> {
+    @Res() res: Response,
+  ): Promise<void> {
     const { accessToken, refreshToken } = await this.authService.naverLogin({
       socialLoginDto: socialUser,
     });
@@ -149,7 +171,8 @@ export class AuthController {
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    return { accessToken };
+    // return { accessToken };
+    res.redirect(`${process.env.FRONT_ADDRESS!}/main`);
   }
 
   @ApiOperation({
