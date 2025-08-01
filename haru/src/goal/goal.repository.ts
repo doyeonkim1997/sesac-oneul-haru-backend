@@ -67,7 +67,7 @@ export class GoalRepository {
               bookmarkId: true,
             },
           },
-
+          goalId: true,
           content: true,
           category: true,
           createdAt: true,
@@ -79,6 +79,7 @@ export class GoalRepository {
       });
 
       return result.map((goal) => ({
+        goalId: goal.goalId,
         nickName: goal.user?.nickName ?? '',
         imageUrl: goal.user?.image?.imageUrl ?? null,
         isBookmarked: goal.bookmarks.length > 0,

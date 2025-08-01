@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class FindGoalDto {
+  @ApiProperty({
+    type: Number,
+    description: '목표 Id',
+    example: 1,
+    required: true,
+  })
+  goalId: number;
+
   @ApiProperty({ example: '닉네임', description: '사용자 닉네임' })
   nickName: string;
 
