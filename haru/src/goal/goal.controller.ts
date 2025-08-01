@@ -63,36 +63,36 @@ export class GoalController {
   }
 
   // 사용자 특정 목표 조회
-  @ApiOperation({
-    summary: '특정 사용자 목표 조회',
-    description: '목표 ID와 사용자 ID를 통해 목표를 조회합니다.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '목표 조회 성공',
-    type: FindGoalDto,
-  })
-  @ApiUnauthorizedResponse({
-    description: '로그인이 필요합니다.',
-  })
-  @ApiNotFoundResponse({
-    description: '유효하지 않는 사용자입니다',
-  })
-  @ApiNotFoundResponse({
-    description: '목표를 찾을 수 없습니다.',
-  })
-  @ApiInternalServerErrorResponse({
-    description: '목표 조회 중 오류가 발생했습니다.',
-  })
-  @ApiBearerAuth()
-  @Get(':goalId')
-  @UseGuards(AuthGuard('jwt'))
-  async findOne(
-    @Param('goalId', ParseIntPipe) goalId: number,
-    @getUser() user: UserEntity,
-  ): Promise<FindGoalDto> {
-    return await this.goalService.getGoalById(goalId, user.userId);
-  }
+  // @ApiOperation({
+  //   summary: '특정 사용자 목표 조회',
+  //   description: '목표 ID와 사용자 ID를 통해 목표를 조회합니다.',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: '목표 조회 성공',
+  //   type: FindGoalDto,
+  // })
+  // @ApiUnauthorizedResponse({
+  //   description: '로그인이 필요합니다.',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '유효하지 않는 사용자입니다',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '목표를 찾을 수 없습니다.',
+  // })
+  // @ApiInternalServerErrorResponse({
+  //   description: '목표 조회 중 오류가 발생했습니다.',
+  // })
+  // @ApiBearerAuth()
+  // @Get(':goalId')
+  // @UseGuards(AuthGuard('jwt'))
+  // async findOne(
+  //   @Param('goalId', ParseIntPipe) goalId: number,
+  //   @getUser() user: UserEntity,
+  // ): Promise<FindGoalDto> {
+  //   return await this.goalService.getGoalById(goalId, user.userId);
+  // }
 
   // 사용자 전체 목표 조회
   @ApiOperation({
