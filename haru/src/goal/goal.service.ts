@@ -3,8 +3,8 @@ import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { CheerResponseDto } from './dto/cheer-response.dto';
 import { CreateGoalDto } from './dto/create-goal.dto';
-import { FilterGoalDto } from './dto/filter-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
+import { OutputGoalDto } from './dto/output-goal-dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { GoalRepository } from './goal.repository';
 
@@ -24,7 +24,7 @@ export class GoalService {
   }
 
   // 특정 사용자 목표 조회 (변경 없음)
-  async getGoalById(goalId: number, userId: number): Promise<FindGoalDto> {
+  async getGoalById(goalId: number, userId: number): Promise<OutputGoalDto> {
     const findUser = await this.goalRepository.findUserByUserId(userId);
 
     if (!findUser) {
@@ -42,15 +42,15 @@ export class GoalService {
   }
 
   // 필터링 (변경 없음)
-  async goalFilter(
-    filterGoalDto: FilterGoalDto,
-    userId: number,
-    user: UserEntity,
-  ): Promise<FindGoalDto[]> {
-    // 로그인 검증
-    validateLogin(userId, user.userId);
-    return await this.goalRepository.goalFilter(filterGoalDto);
-  }
+  // async goalFilter(
+  //   filterGoalDto: FilterGoalDto,
+  //   userId: number,
+  //   user: UserEntity,
+  // ): Promise<FindGoalDto[]> {
+  //   // 로그인 검증
+  //   validateLogin(userId, user.userId);
+  //   return await this.goalRepository.goalFilter(filterGoalDto);
+  // }
 
   // 목표 수정 (userId를 통한 소유권 검증 로직은 유지)
   async updateGoal(

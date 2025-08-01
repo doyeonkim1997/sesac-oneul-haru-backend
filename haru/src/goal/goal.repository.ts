@@ -5,7 +5,7 @@ import { FindGoalDto } from './dto/find-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 
 import { CheerResponseDto } from './dto/cheer-response.dto';
-import { FilterGoalDto } from './dto/filter-goal.dto';
+import { OutputGoalDto } from './dto/output-goal-dto';
 import { GoalEntity } from './entity/goal.entity';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class GoalRepository {
   }
 
   // 내 목표 조회
-  async getGoalById(goalId: number, userId: number): Promise<FindGoalDto> {
+  async getGoalById(goalId: number, userId: number): Promise<OutputGoalDto> {
     try {
       const goal = await this.prisma.goal.findFirst({
         where: { goalId: goalId, userId: userId, isDeleted: false },
@@ -45,10 +45,50 @@ export class GoalRepository {
   // 내 목표 전체 조회
   async getAllGoal(userId: number): Promise<FindGoalDto[]> {
     try {
-      return await this.prisma.goal.findMany({
+      const result = await this.prisma.goal.findMany({
         where: { userId: userId, isDeleted: false },
+        select: {
+          user: {
+            select: {
+              nickName: true,
+              image: {
+                select: {
+                  imageUrl: true,
+                },
+              },
+            },
+          },
+
+          bookmarks: {
+            where: {
+              userId,
+            },
+            select: {
+              bookmarkId: true,
+            },
+          },
+
+          content: true,
+          category: true,
+          createdAt: true,
+          updatedAt: true,
+          isCompleted: true,
+          cheerCount: true,
+        },
         orderBy: { createdAt: 'desc' },
       });
+
+      return result.map((goal) => ({
+        nickName: goal.user?.nickName ?? '',
+        imageUrl: goal.user?.image?.imageUrl ?? null,
+        isBookmarked: goal.bookmarks.length > 0,
+        content: goal.content,
+        category: goal.category,
+        createdAt: goal.createdAt,
+        updatedAt: goal.updatedAt,
+        isCompleted: goal.isCompleted,
+        cheerCount: goal.cheerCount,
+      }));
     } catch {
       throw new InternalServerErrorException('목표 목록 조회에 실패했습니다.');
     }
@@ -120,34 +160,34 @@ export class GoalRepository {
   }
 
   // 목표 필터링 (변경 없음)
-  async goalFilter(filterGoalDto: FilterGoalDto): Promise<FindGoalDto[]> {
-    try {
-      const { userId, isCompleted } = filterGoalDto;
+  // async goalFilter(filterGoalDto: FilterGoalDto): Promise<FindGoalDto[]> {
+  //   try {
+  //     const { userId, isCompleted } = filterGoalDto;
 
-      let userIds: number[] = [userId];
+  //     let userIds: number[] = [userId];
 
-      if (isCompleted === 'all') {
-        const friendIds = await this.getFriendIds(userId);
-        userIds = [...userIds, ...friendIds];
-      }
+  //     if (isCompleted === 'all') {
+  //       const friendIds = await this.getFriendIds(userId);
+  //       userIds = [...userIds, ...friendIds];
+  //     }
 
-      const whereCondition: any = {
-        userId: { in: userIds },
-        isDeleted: false,
-      };
+  //     const whereCondition: any = {
+  //       userId: { in: userIds },
+  //       isDeleted: false,
+  //     };
 
-      if (isCompleted !== 'all') {
-        whereCondition.isCompleted = isCompleted;
-      }
+  //     if (isCompleted !== 'all') {
+  //       whereCondition.isCompleted = isCompleted;
+  //     }
 
-      return await this.prisma.goal.findMany({
-        where: whereCondition,
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch {
-      throw new InternalServerErrorException('목표 필터링에 실패했습니다.');
-    }
-  }
+  //     return await this.prisma.goal.findMany({
+  //       where: whereCondition,
+  //       orderBy: { createdAt: 'desc' },
+  //     });
+  //   } catch {
+  //     throw new InternalServerErrorException('목표 필터링에 실패했습니다.');
+  //   }
+  // }
 
   // 목표 삭제 (소프트 딜리트) (변경 없음)
   async deleteGoal(goalId: number, userId: number): Promise<boolean> {
