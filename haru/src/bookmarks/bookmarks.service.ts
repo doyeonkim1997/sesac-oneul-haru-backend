@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { BookmarksRepository } from './bookmarks.repository';
 import { BookmarkResponseDto } from './dto/bookmark-response.dto';
@@ -20,9 +19,8 @@ export class BookmarksService {
   }
 
   // 본인 북마크한 모든 목록 조회
-  async findAllByUser(userId: number, user: UserEntity): Promise<BookmarkResponseDto[]> {
-    validateLogin(userId, user.userId);
-    return this.bookmarkRepository.findAllByUser(userId);
+  async findAllByUser(user: UserEntity): Promise<BookmarkResponseDto[]> {
+    return this.bookmarkRepository.findAllByUser(user.userId);
   }
 
   // 북마크 수정
