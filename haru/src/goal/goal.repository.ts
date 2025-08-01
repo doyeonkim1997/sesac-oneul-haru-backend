@@ -13,13 +13,14 @@ export class GoalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // 목표 생성
-  async createGoal(createGoalDto: CreateGoalDto, userId: number): Promise<CreateGoalDto | null> {
+  async createGoal(createGoalDto: CreateGoalDto, userId: number): Promise<CreateGoalDto> {
+    const { content, category } = createGoalDto;
     try {
       return await this.prisma.goal.create({
         data: {
           userId: userId,
-          content: createGoalDto.content,
-          category: createGoalDto.category,
+          content,
+          category,
         },
       });
     } catch {
@@ -55,6 +56,7 @@ export class GoalRepository {
 
   // 목표 수정
   async updateGoal(goalId: number, updateGoalDto: UpdateGoalDto): Promise<UpdateGoalDto> {
+    const { content, category, isCompleted } = updateGoalDto;
     try {
       // 업데이트 전 존재 여부 확인
       const existingGoal = await this.prisma.goal.findUnique({
@@ -65,10 +67,10 @@ export class GoalRepository {
       return await this.prisma.goal.update({
         where: { goalId: goalId },
         data: {
-          content: updateGoalDto.content,
-          category: updateGoalDto.category,
+          content,
+          category,
           updatedAt: new Date(),
-          isCompleted: updateGoalDto.isCompleted,
+          isCompleted,
         },
       });
     } catch (error) {
