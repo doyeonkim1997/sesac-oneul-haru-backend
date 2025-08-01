@@ -20,6 +20,7 @@ import {
   IAuthServiceSocialLoginInput,
   IAuthServiceSocialLoginOutput,
 } from './interfaces/iauth-service-social-login';
+import { ImageUrlDto } from 'src/user/dto/image-url-dto';
 
 @Injectable()
 export class AuthService {
@@ -129,9 +130,12 @@ export class AuthService {
   }
 
   // 이메일 로그인
-  async emailLogin(
-    emailLoginDto: EmailLoginDto,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async emailLogin(emailLoginDto: EmailLoginDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    nickName: string;
+    imageUrl: ImageUrlDto | null;
+  }> {
     const { email, password } = emailLoginDto;
     const user = await this.authRepository.findByEmail({ email });
 
@@ -144,7 +148,7 @@ export class AuthService {
       // refreshToken 저장
       await this.authRepository.setRefreshToken(refreshToken, user.userId);
 
-      return { accessToken, refreshToken };
+      return { accessToken, refreshToken, nickName: user.nickName, imageUrl: user.image };
     } else {
       throw new UnauthorizedException('로그인 또는 비밀번호를 다시 입력해주세요.');
     }
@@ -202,7 +206,11 @@ export class AuthService {
   }
 
   // accessToken 재발급용
-  async refresh(refreshToken: string): Promise<{ accessToken: string }> {
+  async refresh(refreshToken: string): Promise<{
+    accessToken: string;
+    nickName: string;
+    imageUrl: ImageUrlDto | null;
+  }> {
     this.logger.debug('refresh 메서드 시작');
 
     const decodedRefreshToken = await this.jwtService.verify(refreshToken, {
@@ -221,7 +229,7 @@ export class AuthService {
 
     this.logger.debug('refresh 메서드 종료');
 
-    return { accessToken };
+    return { accessToken, nickName: user.nickName, imageUrl: user.image };
   }
 
   // refreshToken 유효성 검증

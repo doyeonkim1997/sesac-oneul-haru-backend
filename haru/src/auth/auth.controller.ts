@@ -19,6 +19,7 @@ import { JwtRefreshGuard } from './guards/jwt-refresh-guard';
 import { KakaoAuthGuard } from './guards/kakao-auth-guard';
 import { NaverAuthGuard } from './guards/naver-auth-guard';
 import { SocialUser, SocialUserAfterAuth } from './user.decorator';
+import { ImageUrlDto } from 'src/user/dto/image-url-dto';
 
 @Controller('auth')
 export class AuthController {
@@ -70,11 +71,7 @@ export class AuthController {
 
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
-
-    // return { accessToken };
-    // 프론트 주소로 리다이렉트
-    // 리프레시 토큰을 전달했으로 accessToken을 새로 받음
-    res.redirect(`${process.env.FRONT_ADDRESS!}/main`);
+    res.send('요청 끝');
   }
 
   // 구글 로그인 창 이동
@@ -121,9 +118,7 @@ export class AuthController {
 
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
-
-    // return { accessToken };
-    res.redirect(`${process.env.FRONT_ADDRESS!}/main`);
+    res.send('요청 끝');
   }
 
   // 네이버 로그인 창 이동
@@ -171,8 +166,7 @@ export class AuthController {
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    // return { accessToken };
-    res.redirect(`${process.env.FRONT_ADDRESS!}/main`);
+    res.send('요청 끝');
   }
 
   @ApiOperation({
@@ -188,6 +182,14 @@ export class AuthController {
           type: 'string',
           example: 'eyjHskdjqk2kjakdjiqkljLKKKKKDjjdswioque',
         },
+        nickName: {
+          type: 'string',
+          example: '닉네임',
+        },
+        imageUrl: {
+          type: 'string',
+          example: 'haru 이미지.jpeg',
+        },
       },
     },
   })
@@ -198,8 +200,13 @@ export class AuthController {
   async emailLogin(
     @Body() emailLoginDto: EmailLoginDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string }> {
-    const { accessToken, refreshToken } = await this.authService.emailLogin(emailLoginDto);
+  ): Promise<{
+    accessToken: string;
+    nickName: string;
+    imageUrl: ImageUrlDto | null;
+  }> {
+    const { accessToken, refreshToken, nickName, imageUrl } =
+      await this.authService.emailLogin(emailLoginDto);
 
     // res.cookie('accessToken', accessToken, { httpOnly: true });
     res.cookie('refreshToken', refreshToken, { httpOnly: true });
@@ -207,7 +214,10 @@ export class AuthController {
     console.log(`accessToken 확인 : ${accessToken}`);
     console.log(`refreshToken 확인 : ${refreshToken}`);
 
-    return { accessToken };
+    this.logger.debug(`${nickName} 닉네임 확인 `);
+    this.logger.debug(imageUrl);
+
+    return { accessToken, nickName, imageUrl };
   }
 
   @ApiOperation({
@@ -260,6 +270,14 @@ export class AuthController {
           type: 'string',
           example: 'eyjHskdjqk2kjakdjiqkljLKKKKKDjjdswioque',
         },
+        nickName: {
+          type: 'string',
+          example: '닉네임',
+        },
+        imageUrl: {
+          type: 'string',
+          example: 'haru 이미지.jpeg',
+        },
       },
     },
   })
@@ -267,14 +285,22 @@ export class AuthController {
   async refresh(
     @Req() req: Request,
     // @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{
+    accessToken: string;
+    nickName: string;
+    imageUrl: ImageUrlDto | null;
+  }> {
     const refreshToken = req.cookies['refreshToken'];
     this.logger.debug(`refreshToken 확인 : ${refreshToken}`);
-    const newAccessToken = await this.authService.refresh(refreshToken);
+    const newInfo = await this.authService.refresh(refreshToken);
 
     // res.cookie('accessToken', newAccessToken.accessToken, { httpOnly: true });
 
-    return { accessToken: newAccessToken.accessToken };
+    return {
+      accessToken: newInfo.accessToken,
+      nickName: newInfo.nickName,
+      imageUrl: newInfo.imageUrl,
+    };
   }
 
   @ApiOperation({

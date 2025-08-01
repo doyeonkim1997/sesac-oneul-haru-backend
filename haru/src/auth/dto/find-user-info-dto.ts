@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class FindUserInfoDto {
   @ApiProperty({
@@ -57,4 +57,19 @@ export class FindUserInfoDto {
   @IsString()
   @IsNotEmpty()
   authType: string;
+
+  @ApiProperty({
+    type: String,
+    description: '유저 프로필 이미지 URL',
+    example: 'https://cdn.example.com/profile.jpg',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  image: ImageDto | null;
+}
+
+export class ImageDto {
+  @ApiProperty()
+  imageUrl: string;
 }

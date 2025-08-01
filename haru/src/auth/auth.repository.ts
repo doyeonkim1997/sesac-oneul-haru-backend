@@ -20,6 +20,9 @@ export class AuthRepository {
         password: true,
         authType: true,
         refreshToken: true,
+        image: {
+          select: { imageUrl: true },
+        },
       },
     });
   }
@@ -35,6 +38,9 @@ export class AuthRepository {
         password: true,
         authType: true,
         refreshToken: true,
+        image: {
+          select: { imageUrl: true },
+        },
       },
     });
   }
