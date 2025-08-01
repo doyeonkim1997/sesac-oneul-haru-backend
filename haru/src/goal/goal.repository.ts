@@ -270,6 +270,8 @@ export class GoalRepository {
       throw new InternalServerErrorException('오늘 응원 누적 수 조회에 실패했습니다.');
     }
   }
+
+  // 목표 미완료자 찾기
   async findIncompleteGoal(todayStart: Date, todayEnd: Date) {
     return await this.prisma.goal.findMany({
       where: {
@@ -281,6 +283,21 @@ export class GoalRepository {
       },
       include: {
         user: true,
+      },
+    });
+  }
+
+  // 자정 금일 응원 수 초기화
+  async resetCount(todayStart: Date, todayEnd: Date): Promise<void> {
+    await this.prisma.goal.updateMany({
+      where: {
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
+      },
+      data: {
+        cheerCount: 0,
       },
     });
   }

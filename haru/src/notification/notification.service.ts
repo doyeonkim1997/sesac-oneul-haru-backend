@@ -50,4 +50,13 @@ export class NotificationService {
       );
     }
   }
+
+  @Cron('*/10 * * * * *')
+  async resetCheerCount() {
+    const { todayStart, todayEnd } = this.getTodayRange();
+
+    await this.goalRepository.resetCount(todayStart, todayEnd);
+
+    this.logger.log(`자정이 되어 오늘 생성된 목표의 응원수가 초기화 됩니다.`);
+  }
 }
