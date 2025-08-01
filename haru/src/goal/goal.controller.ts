@@ -115,13 +115,10 @@ export class GoalController {
     description: '목표 목록 조회에 실패했습니다.',
   })
   @ApiBearerAuth()
-  @Get('/:userId/all')
+  @Get('/all')
   @UseGuards(AuthGuard('jwt'))
-  async findAll(
-    @Param('userId', ParseIntPipe) userId: number,
-    @getUser() user: UserEntity,
-  ): Promise<FindGoalDto[]> {
-    return await this.goalService.getAllGoals(userId, user);
+  async findAll(@getUser() user: UserEntity): Promise<FindGoalDto[]> {
+    return await this.goalService.getAllGoals(user);
   }
 
   // 필터링 (필요 X)

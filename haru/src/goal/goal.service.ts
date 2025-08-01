@@ -37,9 +37,8 @@ export class GoalService {
   }
 
   // 사용자 전체 목표 조회 (변경 없음)
-  async getAllGoals(userId: number, user: UserEntity): Promise<FindGoalDto[]> {
-    validateLogin(userId, user.userId);
-    return await this.goalRepository.getAllGoal(userId);
+  async getAllGoals(user: UserEntity): Promise<FindGoalDto[]> {
+    return await this.goalRepository.getAllGoal(user.userId);
   }
 
   // 필터링 (변경 없음)
