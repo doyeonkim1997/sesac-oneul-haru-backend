@@ -71,16 +71,12 @@ export class FriendService {
   }
 
   // userId로 친구 목록 조회
-  async getFriendsByUserId(userId: number, user: UserEntity): Promise<FindFriendDto[]> {
-    validateLogin(userId, user.userId);
-    return await this.friendRepository.findAllFriendsByUserId(userId);
+  async getFriendsByUserId(user: UserEntity): Promise<FindFriendDto[]> {
+    return await this.friendRepository.findAllFriendsByUserId(user.userId);
   }
 
   // 친구 프로필 정보 조회
-  async showFriendInfo(user: UserEntity, userId: number, friendId: number): Promise<FriendInfoDto> {
-    // 로그인 검사
-    validateLogin(userId, user.userId);
-
+  async showFriendInfo(friendId: number): Promise<FriendInfoDto> {
     const findFriend = await this.friendRepository.findFriendByUserId(friendId);
 
     if (!findFriend) {
@@ -91,20 +87,15 @@ export class FriendService {
   }
 
   // 친구 목표 목록 조회
-  async showFriendGoals(
-    user: UserEntity,
-    userId: number,
-    friendId: number,
-  ): Promise<FriendGoalsDto[]> {
-    validateLogin(userId, user.userId);
-
+  async showFriendGoals(user: UserEntity, friendId: number): Promise<FriendGoalsDto[]> {
+    if (user.userId === friendId) {
+      throw new BadRequestException('친구가 아닌 사용자를 조회했습니다.');
+    }
     return await this.friendRepository.findFriendGoalsByFriendId(friendId);
   }
 
-  async removeFriend(requestId: number, user: UserEntity, userId: number) {
-    // 로그인 검사
-    validateLogin(userId, user.userId);
-
+  // 친구 삭제
+  async removeFriend(requestId: number) {
     const findRequest = await this.friendRepository.findFriendRequestByRequestId(requestId);
 
     if (!findRequest) {

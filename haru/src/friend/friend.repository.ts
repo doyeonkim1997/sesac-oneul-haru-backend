@@ -123,7 +123,8 @@ export class FriendRepository {
         status: FriendRequestStatus.ACCEPT,
         OR: [{ userId: userId }, { receiverId: userId }],
       },
-      include: {
+      select: {
+        requestId: true,
         user: {
           select: {
             userId: true,
@@ -151,11 +152,16 @@ export class FriendRepository {
 
     // 요청자/수락자 중 userId가 아닌 쪽을 친구로 반환
     const friends = results.map((req) => {
-      if (req.userId === userId) {
-        return req.receiver;
-      } else {
-        return req.user;
-      }
+      const friend = req.user.userId === userId ? req.receiver : req.user;
+
+      return {
+        requestId: req.requestId,
+        userId: friend.userId,
+        nickName: friend.nickName,
+        email: friend.email,
+        tier: friend.tier,
+        imageUrl: friend.image?.imageUrl ?? null,
+      };
     });
 
     return friends;
