@@ -9,11 +9,9 @@ import {
   ApiNotFoundResponse,
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
-
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
-
   @ApiOperation({
     summary: '목표 미완료자 알림',
     description: '목표 미완료자 알림',
@@ -34,11 +32,14 @@ export class NotificationController {
   })
   @Get('sse')
   @UseGuards(AuthGuard('jwt'))
-  async connect(@Req() req: Request, @Res() res: Response): Promise<void> {
-    res.setHeader('Content-Type', 'text/event-stream');
-
+  sse(@Req() req: Request, @Res() res: Response) {
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'cache-control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+    res.flushHeaders();
     this.notificationService.addClient(res);
-
     req.on('close', () => {
       this.notificationService.removeClient(res);
     });
