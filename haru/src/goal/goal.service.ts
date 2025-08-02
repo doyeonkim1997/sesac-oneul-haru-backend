@@ -4,9 +4,10 @@ import { UserEntity } from 'src/user/entity/user.entity';
 import { CheerResponseDto } from './dto/cheer-response.dto';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
-import { OutputGoalDto } from './dto/output-goal-dto';
+import { OutputGoalDto } from './dto/output-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { GoalRepository } from './goal.repository';
+import { GoalsCalenderDto } from './dto/goals-calender.dto';
 
 @Injectable()
 export class GoalService {
@@ -46,6 +47,12 @@ export class GoalService {
   // 사용자 전체 목표 조회 (변경 없음)
   async getAllGoals(user: UserEntity): Promise<FindGoalDto[]> {
     return await this.goalRepository.getAllGoal(user.userId);
+  }
+
+  // 해당 기간의 목표 조회
+  async findGoalsCalender(userId: number, start: Date, end: Date): Promise<GoalsCalenderDto[]> {
+    this.logger.debug('기간 목표 조회');
+    return this.goalRepository.findGoalsCalender(userId, start, end);
   }
 
   // 목표 수정 (userId를 통한 소유권 검증 로직은 유지)
