@@ -200,6 +200,7 @@ export class GoalRepository {
     return this.prisma.goal.findMany({
       where: {
         userId,
+        isDeleted: false,
         createdAt: {
           gte: start,
           lte: end,
