@@ -53,8 +53,11 @@ export class UserController {
   @ApiBearerAuth()
   @Get('/email')
   @UseGuards(AuthGuard('jwt'))
-  searchUserByEmail(@Query('search') search: string): Promise<FindUserDto[]> {
-    return this.userService.searchUserByEmail(search);
+  searchUserByEmail(
+    @Query('search') search: string,
+    @getUser() user: UserEntity,
+  ): Promise<FindUserDto[]> {
+    return this.userService.searchUserByEmail(search, user.userId);
   }
 
   @ApiOperation({

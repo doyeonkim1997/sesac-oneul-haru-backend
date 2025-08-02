@@ -51,7 +51,7 @@ export class UserRepository {
   }
 
   // 이메일로 사용자 조회
-  async findUserByEmail(search: string): Promise<FindUserDto[]> {
+  async findUserByEmail(search: string, userId: number): Promise<FindUserDto[]> {
     const user = await this.prisma.user.findMany({
       select: {
         userId: true,
@@ -69,6 +69,9 @@ export class UserRepository {
           contains: search,
         },
         isDeleted: false,
+        userId: {
+          not: userId,
+        },
       },
     });
 
