@@ -18,6 +18,7 @@ export class AuthRepository {
         userId: true,
         nickName: true,
         password: true,
+        tier: true,
         authType: true,
         refreshToken: true,
         image: {
@@ -36,6 +37,7 @@ export class AuthRepository {
         userId: true,
         nickName: true,
         password: true,
+        tier: true,
         authType: true,
         refreshToken: true,
         image: {

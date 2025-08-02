@@ -41,6 +41,15 @@ export class FindUserInfoDto {
 
   @ApiProperty({
     type: String,
+    description: '유저의 등급(이름표)',
+    example: 'BRONZE',
+    required: true,
+  })
+  @IsString()
+  tier: string;
+
+  @ApiProperty({
+    type: String,
     description: '해싱된 비밀번호',
     example: 'asdkasjdkqwjekqlwj123j12ihqswkfalsk/',
     required: false,

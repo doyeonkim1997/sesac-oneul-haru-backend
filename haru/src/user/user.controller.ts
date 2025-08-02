@@ -29,6 +29,7 @@ import { UpdatePasswordDto } from './dto/update-password-dto';
 import { UserEntity } from './entity/user.entity';
 import { getUser } from './get-user-decorator';
 import { UserService } from './user.service';
+import { UserProfileDto } from './dto/user-profile-dto';
 
 @Controller('user')
 export class UserController {
@@ -52,6 +53,28 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   searchUserByEmail(@Query('search') search: string): Promise<FindUserDto[]> {
     return this.userService.searchUserByEmail(search);
+  }
+
+  @ApiOperation({
+    summary: '사용자 프로필 조회',
+    description: '닉네임, 이메일, 프로필 이미지',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '사용자 정보 배열',
+    type: UserProfileDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '프로필 정보를 찾을 수 없습니다.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/profile')
+  getUserProfile(@getUser() user: UserEntity): Promise<UserProfileDto> {
+    return this.userService.getUserProfile(user);
   }
 
   @ApiOperation({

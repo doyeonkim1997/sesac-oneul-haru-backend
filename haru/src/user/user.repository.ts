@@ -4,6 +4,7 @@ import { FindUserDto } from './dto/find-user-dto';
 import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
 import { ImageEntity } from './entity/image.entity';
 import { UserEntity } from './entity/user.entity';
+import { UserProfileDto } from './dto/user-profile-dto';
 
 @Injectable()
 export class UserRepository {
@@ -18,6 +19,26 @@ export class UserRepository {
     });
 
     return image;
+  }
+
+  async findUserProfileById(userId: number): Promise<UserProfileDto | null> {
+    const profile = await this.prisma.user.findFirst({
+      where: {
+        userId,
+      },
+      select: {
+        nickName: true,
+        email: true,
+        tier: true,
+        image: {
+          select: {
+            imageUrl: true,
+          },
+        },
+      },
+    });
+
+    return profile;
   }
 
   // 회원가입할 때 이미지 URL 찾아서 집어넣기 위한 메서드
