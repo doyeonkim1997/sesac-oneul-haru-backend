@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -56,7 +58,7 @@ export class UserController {
   }
 
   @ApiOperation({
-    summary: '사용자 프로필 조회',
+    summary: 'userId로 사용자 프로필 조회',
     description: '닉네임, 이메일, 프로필 이미지',
   })
   @ApiResponse({
@@ -72,9 +74,9 @@ export class UserController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Get('/profile')
-  getUserProfile(@getUser() user: UserEntity): Promise<UserProfileDto> {
-    return this.userService.getUserProfile(user);
+  @Get('/profile/:userId')
+  getUserProfile(@Param('userId', ParseIntPipe) userId: number): Promise<UserProfileDto> {
+    return this.userService.getUserProfile(userId);
   }
 
   @ApiOperation({

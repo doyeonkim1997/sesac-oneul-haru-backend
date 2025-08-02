@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/databases/prisma/prisma.service';
-import { FriendRequestStatus } from './enum/friend-request-status.enum';
 import { FindFriendDto } from './dto/find-friend-dto';
-import { FriendRequestDto } from './dto/friend-request-dto';
-import { FriendInfoDto } from './dto/friend-info-dto';
 import { FriendGoalsDto } from './dto/friend-goals-dto';
+import { FriendInfoDto } from './dto/friend-info-dto';
+import { FriendRequestDto } from './dto/friend-request-dto';
+import { UpdateFriendDto } from './dto/update-friend-dto';
+import { FriendRequestStatus } from './enum/friend-request-status.enum';
 
 @Injectable()
 export class FriendRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // 친구 요청 보내기 (친구 요청 생성)
-  async createFriendRequest(userId: number, receiverId: number): Promise<FriendRequestDto> {
+  async createFriendRequest(userId: number, receiverId: number): Promise<UpdateFriendDto> {
     const friendRequest = this.prisma.friendRequest.create({
       data: {
         userId,
@@ -26,7 +27,7 @@ export class FriendRepository {
   async findFriendRequestByUserId(
     userId: number,
     receiverId: number,
-  ): Promise<FriendRequestDto | null> {
+  ): Promise<UpdateFriendDto | null> {
     return this.prisma.friendRequest.findFirst({
       where: {
         OR: [
@@ -38,7 +39,7 @@ export class FriendRepository {
   }
 
   // requestId로 친구 요청조회
-  async findFriendRequestByRequestId(requestId: number): Promise<FriendRequestDto | null> {
+  async findFriendRequestByRequestId(requestId: number): Promise<UpdateFriendDto | null> {
     return this.prisma.friendRequest.findFirst({
       where: {
         requestId,
@@ -80,23 +81,47 @@ export class FriendRepository {
     return friend;
   }
 
-  // 모든 친구요청 목록 조회
+  // 친구 요청 + 요청자 닉네임/이미지 함께 조회
   async findAllFriendRequests(userId: number): Promise<FriendRequestDto[]> {
     const requests = await this.prisma.friendRequest.findMany({
       where: {
-        receiverId: userId, // 요청 받은 사람의 친구 요청 목록
-        status: 'PENDING', // 대기중인 요청목록만 필터링
+        receiverId: userId, // 나에게 온 요청
+        status: 'PENDING',
       },
       select: {
-        receiverId: true,
-        userId: true,
         requestId: true,
+        userId: true,
+        receiverId: true,
         status: true,
         createdAt: true,
+        user: {
+          // 요청 보낸 유저 정보
+          select: {
+            nickName: true,
+            email: true,
+            tier: true,
+            image: {
+              select: {
+                imageUrl: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    return requests;
+    // 데이터 가공: user → nickName, imageUrl 꺼내기
+    return requests.map((request) => ({
+      requestId: request.requestId,
+      userId: request.userId,
+      receiverId: request.receiverId,
+      email: request.user.email,
+      tier: request.user.tier,
+      status: request.status,
+      createdAt: request.createdAt,
+      nickName: request.user.nickName,
+      imageUrl: request.user.image?.imageUrl || null,
+    }));
   }
 
   // 친구id로 친구의 모든 목표 목록 조회
@@ -142,14 +167,14 @@ export class FriendRepository {
   async updateRequestStatus(
     requestId: number,
     status: FriendRequestStatus,
-  ): Promise<FriendRequestDto> {
+  ): Promise<UpdateFriendDto> {
     return this.prisma.friendRequest.update({
       where: { requestId },
       data: { status },
     });
   }
 
-  async deleteRequest(requestId: number): Promise<FriendRequestDto> {
+  async deleteRequest(requestId: number): Promise<UpdateFriendDto> {
     return this.prisma.friendRequest.delete({
       where: { requestId },
     });

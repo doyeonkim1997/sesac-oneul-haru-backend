@@ -11,10 +11,10 @@ import {
 import { UserEntity } from 'src/user/entity/user.entity';
 import { getUser } from 'src/user/get-user-decorator';
 import { FindFriendDto } from './dto/find-friend-dto';
-import { FriendService } from './friend.service';
 import { FriendGoalsDto } from './dto/friend-goals-dto';
 import { FriendInfoDto } from './dto/friend-info-dto';
 import { FriendRequestDto } from './dto/friend-request-dto';
+import { FriendService } from './friend.service';
 
 @Controller('friend')
 export class FriendController {
