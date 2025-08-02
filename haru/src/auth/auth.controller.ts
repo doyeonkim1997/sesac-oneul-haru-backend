@@ -190,6 +190,14 @@ export class AuthController {
           type: 'string',
           example: 'haru 이미지.jpeg',
         },
+        tier: {
+          type: 'string',
+          example: 'BRONZE',
+        },
+        authType: {
+          type: 'string',
+          example: 'KAKAO',
+        },
       },
     },
   })
@@ -205,8 +213,9 @@ export class AuthController {
     nickName: string;
     imageUrl: ImageUrlDto | null;
     tier: string;
+    authType: string;
   }> {
-    const { accessToken, refreshToken, nickName, imageUrl, tier } =
+    const { accessToken, refreshToken, nickName, imageUrl, tier, authType } =
       await this.authService.emailLogin(emailLoginDto);
 
     // res.cookie('accessToken', accessToken, { httpOnly: true });
@@ -218,7 +227,7 @@ export class AuthController {
     this.logger.debug(`${nickName} 닉네임 확인 `);
     this.logger.debug(imageUrl);
 
-    return { accessToken, nickName, imageUrl, tier };
+    return { accessToken, nickName, imageUrl, tier, authType };
   }
 
   @ApiOperation({
@@ -279,6 +288,14 @@ export class AuthController {
           type: 'string',
           example: 'haru 이미지.jpeg',
         },
+        tier: {
+          type: 'string',
+          example: 'BRONZE',
+        },
+        authType: {
+          type: 'string',
+          example: 'KAKAO',
+        },
       },
     },
   })
@@ -291,6 +308,7 @@ export class AuthController {
     nickName: string;
     imageUrl: ImageUrlDto | null;
     tier: string;
+    authType: string;
   }> {
     const refreshToken = req.cookies['refreshToken'];
     this.logger.debug(`refreshToken 확인 : ${refreshToken}`);
@@ -303,6 +321,7 @@ export class AuthController {
       nickName: newInfo.nickName,
       imageUrl: newInfo.imageUrl,
       tier: newInfo.tier,
+      authType: newInfo.authType,
     };
   }
 
