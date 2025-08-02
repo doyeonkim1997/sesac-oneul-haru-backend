@@ -149,6 +149,21 @@ export class FriendRepository {
           },
         },
 
+        user: {
+          where: {
+            userId: friendId,
+          },
+          select: {
+            nickName: true,
+            image: {
+              select: {
+                imageUrl: true,
+              },
+            },
+          },
+        },
+
+        userId: true,
         goalId: true,
         content: true,
         category: true,
@@ -160,6 +175,9 @@ export class FriendRepository {
     });
 
     return result.map((goal) => ({
+      userId: goal.userId,
+      nickName: goal.user?.nickName ?? '',
+      imageUrl: goal.user?.image?.imageUrl ?? null,
       goalId: goal.goalId,
       isBookmarked: goal.bookmarks.length > 0,
       content: goal.content,
