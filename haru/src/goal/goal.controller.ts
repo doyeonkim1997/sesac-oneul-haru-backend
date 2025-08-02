@@ -55,44 +55,15 @@ export class GoalController {
   @ApiInternalServerErrorResponse({
     description: '목표 생성에 실패했습니다.',
   })
+  @ApiBadRequestResponse({
+    description: '오늘 작성한 목표가 이미 존재합니다.',
+  })
   @ApiBearerAuth()
   @Post('/')
   @UseGuards(AuthGuard('jwt'))
   async create(@Body() createGoalDto: CreateGoalDto, @getUser() user: UserEntity) {
     return await this.goalService.createGoal(createGoalDto, user.userId);
   }
-
-  // 사용자 특정 목표 조회
-  // @ApiOperation({
-  //   summary: '특정 사용자 목표 조회',
-  //   description: '목표 ID와 사용자 ID를 통해 목표를 조회합니다.',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: '목표 조회 성공',
-  //   type: FindGoalDto,
-  // })
-  // @ApiUnauthorizedResponse({
-  //   description: '로그인이 필요합니다.',
-  // })
-  // @ApiNotFoundResponse({
-  //   description: '유효하지 않는 사용자입니다',
-  // })
-  // @ApiNotFoundResponse({
-  //   description: '목표를 찾을 수 없습니다.',
-  // })
-  // @ApiInternalServerErrorResponse({
-  //   description: '목표 조회 중 오류가 발생했습니다.',
-  // })
-  // @ApiBearerAuth()
-  // @Get(':goalId')
-  // @UseGuards(AuthGuard('jwt'))
-  // async findOne(
-  //   @Param('goalId', ParseIntPipe) goalId: number,
-  //   @getUser() user: UserEntity,
-  // ): Promise<FindGoalDto> {
-  //   return await this.goalService.getGoalById(goalId, user.userId);
-  // }
 
   // 사용자 전체 목표 조회
   @ApiOperation({
@@ -120,40 +91,6 @@ export class GoalController {
   async findAll(@getUser() user: UserEntity): Promise<FindGoalDto[]> {
     return await this.goalService.getAllGoals(user);
   }
-
-  // 필터링 (필요 X)
-  // @ApiOperation({
-  //   summary: '목표 목록 필터링',
-  //   description: '목표 목록 필터링',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: '전체/완료/미완료',
-  //   type: FilterGoalDto,
-  // })
-  // @ApiUnauthorizedResponse({
-  //   description: '로그인이 필요합니다.',
-  // })
-  // @ApiUnauthorizedResponse({
-  //   description: '해당 사용자가 로그인한 사용자가 아닙니다.',
-  // })
-  // @ApiInternalServerErrorResponse({
-  //   description: '목표 필터링에 실패했습니다.',
-  // })
-  // @ApiBearerAuth()
-  // @Get('/:userId/filter')
-  // @UseGuards(AuthGuard('jwt'))
-  // async getFilteredGoals(
-  //   @getUser() user: UserEntity,
-  //   @Param('userId', ParseIntPipe) userId: number,
-  //   @Query('status') status: 'all' | 'true' | 'false' = 'all',
-  // ) {
-  //   const filterDto: FilterGoalDto = {
-  //     userId,
-  //     isCompleted: status === 'true' ? true : status === 'false' ? false : 'all',
-  //   };
-  //   return this.goalService.goalFilter(filterDto, userId, user);
-  // }
 
   // 사용자 목표 수정
   @ApiOperation({

@@ -20,6 +20,13 @@ export class GoalService {
     if (!findUser) {
       throw new NotFoundException('유효하지 않는 사용자입니다.');
     }
+
+    const goals = await this.goalRepository.findTodayGoal(userId);
+
+    if (goals.length > 0) {
+      throw new BadRequestException('오늘 작성한 목표가 이미 존재합니다.');
+    }
+
     return await this.goalRepository.createGoal(createGoalDto, userId);
   }
 
@@ -40,17 +47,6 @@ export class GoalService {
   async getAllGoals(user: UserEntity): Promise<FindGoalDto[]> {
     return await this.goalRepository.getAllGoal(user.userId);
   }
-
-  // 필터링 (변경 없음)
-  // async goalFilter(
-  //   filterGoalDto: FilterGoalDto,
-  //   userId: number,
-  //   user: UserEntity,
-  // ): Promise<FindGoalDto[]> {
-  //   // 로그인 검증
-  //   validateLogin(userId, user.userId);
-  //   return await this.goalRepository.goalFilter(filterGoalDto);
-  // }
 
   // 목표 수정 (userId를 통한 소유권 검증 로직은 유지)
   async updateGoal(

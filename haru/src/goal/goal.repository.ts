@@ -4,6 +4,7 @@ import { CreateGoalDto } from './dto/create-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 
+import { endOfDay, startOfDay } from 'date-fns';
 import { CheerResponseDto } from './dto/cheer-response.dto';
 import { OutputGoalDto } from './dto/output-goal-dto';
 import { GoalEntity } from './entity/goal.entity';
@@ -160,35 +161,26 @@ export class GoalRepository {
     }
   }
 
-  // 목표 필터링 (변경 없음)
-  // async goalFilter(filterGoalDto: FilterGoalDto): Promise<FindGoalDto[]> {
-  //   try {
-  //     const { userId, isCompleted } = filterGoalDto;
+  // 사용자가 오늘 작성한 목표 조회
+  async findTodayGoal(userId: number): Promise<OutputGoalDto[]> {
+    const start = startOfDay(new Date()); // 오늘 00:00:00
+    const end = endOfDay(new Date()); // 오늘 23:59:59.999
 
-  //     let userIds: number[] = [userId];
-
-  //     if (isCompleted === 'all') {
-  //       const friendIds = await this.getFriendIds(userId);
-  //       userIds = [...userIds, ...friendIds];
-  //     }
-
-  //     const whereCondition: any = {
-  //       userId: { in: userIds },
-  //       isDeleted: false,
-  //     };
-
-  //     if (isCompleted !== 'all') {
-  //       whereCondition.isCompleted = isCompleted;
-  //     }
-
-  //     return await this.prisma.goal.findMany({
-  //       where: whereCondition,
-  //       orderBy: { createdAt: 'desc' },
-  //     });
-  //   } catch {
-  //     throw new InternalServerErrorException('목표 필터링에 실패했습니다.');
-  //   }
-  // }
+    return this.prisma.goal.findMany({
+      where: {
+        userId,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      select: {
+        goalId: true,
+        userId: true,
+        content: true,
+      },
+    });
+  }
 
   // 목표 삭제 (소프트 딜리트) (변경 없음)
   async deleteGoal(goalId: number, userId: number): Promise<boolean> {
