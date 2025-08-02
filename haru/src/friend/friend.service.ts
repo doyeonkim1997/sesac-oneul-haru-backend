@@ -3,11 +3,11 @@ import { validateLogin } from 'src/auth/validator/validateLogin';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { UserRepository } from '../user/user.repository';
 import { FindFriendDto } from './dto/find-friend-dto';
+import { FriendGoalsDto } from './dto/friend-goals-dto';
+import { FriendInfoDto } from './dto/friend-info-dto';
+import { FriendRequestDto } from './dto/friend-request-dto';
 import { FriendRequestStatus } from './enum/friend-request-status.enum';
 import { FriendRepository } from './friend.repository';
-import { FriendInfoDto } from './dto/friend-info-dto';
-import { FriendGoalsDto } from './dto/friend-goals-dto';
-import { FriendRequestDto } from './dto/friend-request-dto';
 
 @Injectable()
 export class FriendService {
@@ -78,7 +78,9 @@ export class FriendService {
 
   // userId로 모든 친구요청 조회
   async findAllFriendRequests(userId: number): Promise<FriendRequestDto[]> {
-    return await this.friendRepository.findAllFriendRequests(userId);
+    const requests = await this.friendRepository.findAllFriendRequests(userId);
+
+    return requests;
   }
 
   // 친구 프로필 정보 조회

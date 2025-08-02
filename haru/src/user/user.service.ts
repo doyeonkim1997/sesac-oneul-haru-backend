@@ -28,8 +28,8 @@ export class UserService {
   }
 
   // 유저 프로필 정보 가져오기
-  async getUserProfile(user: UserEntity): Promise<UserProfileDto> {
-    const profile = await this.userRepository.findUserProfileById(user.userId);
+  async getUserProfile(userId: number): Promise<UserProfileDto> {
+    const profile = await this.userRepository.findUserProfileById(userId);
 
     if (!profile) {
       throw new NotFoundException('프로필 정보를 찾을 수 없습니다.');
