@@ -204,8 +204,9 @@ export class AuthController {
     accessToken: string;
     nickName: string;
     imageUrl: ImageUrlDto | null;
+    tier: string;
   }> {
-    const { accessToken, refreshToken, nickName, imageUrl } =
+    const { accessToken, refreshToken, nickName, imageUrl, tier } =
       await this.authService.emailLogin(emailLoginDto);
 
     // res.cookie('accessToken', accessToken, { httpOnly: true });
@@ -217,7 +218,7 @@ export class AuthController {
     this.logger.debug(`${nickName} 닉네임 확인 `);
     this.logger.debug(imageUrl);
 
-    return { accessToken, nickName, imageUrl };
+    return { accessToken, nickName, imageUrl, tier };
   }
 
   @ApiOperation({
@@ -289,6 +290,7 @@ export class AuthController {
     accessToken: string;
     nickName: string;
     imageUrl: ImageUrlDto | null;
+    tier: string;
   }> {
     const refreshToken = req.cookies['refreshToken'];
     this.logger.debug(`refreshToken 확인 : ${refreshToken}`);
@@ -300,6 +302,7 @@ export class AuthController {
       accessToken: newInfo.accessToken,
       nickName: newInfo.nickName,
       imageUrl: newInfo.imageUrl,
+      tier: newInfo.tier,
     };
   }
 

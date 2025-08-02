@@ -135,6 +135,7 @@ export class AuthService {
     refreshToken: string;
     nickName: string;
     imageUrl: ImageUrlDto | null;
+    tier: string;
   }> {
     const { email, password } = emailLoginDto;
     const user = await this.authRepository.findByEmail({ email });
@@ -148,7 +149,13 @@ export class AuthService {
       // refreshToken 저장
       await this.authRepository.setRefreshToken(refreshToken, user.userId);
 
-      return { accessToken, refreshToken, nickName: user.nickName, imageUrl: user.image };
+      return {
+        accessToken,
+        refreshToken,
+        nickName: user.nickName,
+        imageUrl: user.image,
+        tier: user.tier,
+      };
     } else {
       throw new UnauthorizedException('로그인 또는 비밀번호를 다시 입력해주세요.');
     }
@@ -210,6 +217,7 @@ export class AuthService {
     accessToken: string;
     nickName: string;
     imageUrl: ImageUrlDto | null;
+    tier: string;
   }> {
     this.logger.debug('refresh 메서드 시작');
 
@@ -229,7 +237,7 @@ export class AuthService {
 
     this.logger.debug('refresh 메서드 종료');
 
-    return { accessToken, nickName: user.nickName, imageUrl: user.image };
+    return { accessToken, nickName: user.nickName, imageUrl: user.image, tier: user.tier };
   }
 
   // refreshToken 유효성 검증
