@@ -1,7 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class FriendGoalsDto {
+  @ApiProperty({
+    type: Number,
+    description: '사용자 ID',
+    example: 42,
+    required: true,
+  })
+  @IsInt()
+  userId: number;
+
+  @ApiProperty({
+    type: String,
+    description: '닉네임',
+    example: '친구닉네임',
+    required: true,
+  })
+  @IsString()
+  nickName: string;
+
+  @ApiProperty({
+    type: String,
+    description: '프로필 이미지 URL',
+    example: 'https://example.com/image.jpg',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string | null;
   @ApiProperty({
     type: Number,
     description: '목표 Id',
