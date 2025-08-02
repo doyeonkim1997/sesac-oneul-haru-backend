@@ -13,6 +13,7 @@ import { UpdateOutputUserInfoDto } from './dto/update-output-user-info-dto';
 import { UpdatePasswordDto } from './dto/update-password-dto';
 import { Tier } from './enum/tier.emum';
 import { UserRepository } from './user.repository';
+import { UserProfileDto } from './dto/user-profile-dto';
 
 @Injectable()
 export class UserService {
@@ -24,6 +25,17 @@ export class UserService {
     const users = await this.userRepository.findUserByEmail(search);
 
     return users;
+  }
+
+  // 유저 프로필 정보 가져오기
+  async getUserProfile(user: UserEntity): Promise<UserProfileDto> {
+    const profile = await this.userRepository.findUserProfileById(user.userId);
+
+    if (!profile) {
+      throw new NotFoundException('프로필 정보를 찾을 수 없습니다.');
+    }
+
+    return profile;
   }
 
   // 사용자 닉네임 수정
