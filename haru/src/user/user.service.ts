@@ -21,8 +21,8 @@ export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   // 이메일로 특정 사용자 조회
-  async searchUserByEmail(search: string): Promise<FindUserDto[]> {
-    const users = await this.userRepository.findUserByEmail(search);
+  async searchUserByEmail(search: string, userId: number): Promise<FindUserDto[]> {
+    const users = await this.userRepository.findUserByEmail(search, userId);
 
     return users;
   }
