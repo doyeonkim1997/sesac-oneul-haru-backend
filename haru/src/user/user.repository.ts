@@ -198,12 +198,9 @@ export class UserRepository {
 
   // 회원 탈퇴
   async deleteUser(userId: number): Promise<boolean> {
-    await this.prisma.user.update({
+    await this.prisma.user.delete({
       where: {
         userId,
-      },
-      data: {
-        isDeleted: true,
       },
     });
 

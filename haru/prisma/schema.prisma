@@ -22,7 +22,7 @@ model User {
   // Relations
   friendRequestsSent     FriendRequest[] @relation("Requester")
   friendRequestsReceived FriendRequest[] @relation("Receiver")
-  image                  Image?          @relation(fields: [imageId], references: [imageId])
+  image   Image? @relation(fields: [imageId], references: [imageId], onDelete: Cascade)
   imageId                Int?            @unique  @map("image_id")
   // auths                  Auth[]
   bookmarks              Bookmark[]
