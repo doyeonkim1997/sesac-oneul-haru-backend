@@ -93,6 +93,36 @@ export class GoalController {
     return this.goalService.findGoalsCalender(user.userId, start, end);
   }
 
+  @ApiOperation({
+    summary: '년, 월로 해당하는 친구 목표 조회 ',
+    description: 'year, month로 해당하는 친구의 목표와 완료 여부 조회',
+  })
+  @ApiResponse({
+    status: 201,
+    description: '목표 목록',
+    type: GoalsCalenderDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiBadRequestResponse({
+    description: '친구가 아닌 사용자를 조회했습니다.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('calender/:friendId')
+  async getFriendGoalsCalender(
+    @Query('year', ParseIntPipe) year: number,
+    @Query('month', ParseIntPipe) month: number,
+    @Param('friendId', ParseIntPipe) friendId: number,
+    @getUser() user: UserEntity,
+  ): Promise<GoalsCalenderDto[]> {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59, 999); // 말일
+
+    return this.goalService.findFriendGoalsCalender(user.userId, friendId, start, end);
+  }
+
   // 사용자 전체 목표 조회
   @ApiOperation({
     summary: '사용자의 전체 목표 조회',
