@@ -55,6 +55,21 @@ export class GoalService {
     return this.goalRepository.findGoalsCalender(userId, start, end);
   }
 
+  // 해당 기간의 목표 조회
+  async findFriendGoalsCalender(
+    userId: number,
+    friendId: number,
+    start: Date,
+    end: Date,
+  ): Promise<GoalsCalenderDto[]> {
+    if (friendId === userId) {
+      throw new BadRequestException('친구가 아닌 사용자를 조회했습니다.');
+    }
+
+    this.logger.debug('기간 목표 조회');
+    return this.goalRepository.findGoalsCalender(userId, start, end);
+  }
+
   // 목표 수정 (userId를 통한 소유권 검증 로직은 유지)
   async updateGoal(
     goalId: number,
