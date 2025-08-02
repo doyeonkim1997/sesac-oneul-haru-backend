@@ -31,8 +31,16 @@ export class FriendRepository {
     return this.prisma.friendRequest.findFirst({
       where: {
         OR: [
-          { userId, receiverId },
-          { userId: receiverId, receiverId: userId },
+          {
+            userId,
+            receiverId,
+            status: { in: ['PENDING', 'ACCEPT'] },
+          },
+          {
+            userId: receiverId,
+            receiverId: userId,
+            status: { in: ['PENDING', 'ACCEPT'] },
+          },
         ],
       },
     });
