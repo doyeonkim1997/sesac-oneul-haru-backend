@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -29,6 +30,7 @@ import { CreateGoalDto } from './dto/create-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { GoalService } from './goal.service';
+import { GoalsCalenderDto } from './dto/goals-calender.dto';
 
 @ApiTags('Goal')
 @Controller('goals')
@@ -63,6 +65,32 @@ export class GoalController {
   @UseGuards(AuthGuard('jwt'))
   async create(@Body() createGoalDto: CreateGoalDto, @getUser() user: UserEntity) {
     return await this.goalService.createGoal(createGoalDto, user.userId);
+  }
+
+  @ApiOperation({
+    summary: '년, 월로 해당하는 목표 조회 ',
+    description: 'year, month로 해당하는 목표와 완료 여부 조회',
+  })
+  @ApiResponse({
+    status: 201,
+    description: '목표 목록',
+    type: GoalsCalenderDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('calender')
+  async getGoalsCalender(
+    @Query('year', ParseIntPipe) year: number,
+    @Query('month', ParseIntPipe) month: number,
+    @getUser() user: UserEntity,
+  ): Promise<GoalsCalenderDto[]> {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59, 999); // 말일
+
+    return this.goalService.findGoalsCalender(user.userId, start, end);
   }
 
   // 사용자 전체 목표 조회

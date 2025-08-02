@@ -6,8 +6,9 @@ import { UpdateGoalDto } from './dto/update-goal.dto';
 
 import { endOfDay, startOfDay } from 'date-fns';
 import { CheerResponseDto } from './dto/cheer-response.dto';
-import { OutputGoalDto } from './dto/output-goal-dto';
+import { OutputGoalDto } from './dto/output-goal.dto';
 import { GoalEntity } from './entity/goal.entity';
+import { GoalsCalenderDto } from './dto/goals-calender.dto';
 
 @Injectable()
 export class GoalRepository {
@@ -94,6 +95,36 @@ export class GoalRepository {
     } catch {
       throw new InternalServerErrorException('목표 목록 조회에 실패했습니다.');
     }
+  }
+
+  // 해당 기간의 목표 조회
+  async findGoalsCalender(userId: number, start: Date, end: Date): Promise<GoalsCalenderDto[]> {
+    const goals = await this.prisma.goal.findMany({
+      where: {
+        userId,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+        isDeleted: false,
+      },
+      select: {
+        goalId: true,
+        createdAt: true,
+        isCompleted: true,
+      },
+    });
+
+    return goals.map((goal) => {
+      const createdAt = new Date(goal.createdAt);
+      return {
+        goalId: goal.goalId,
+        year: createdAt.getFullYear(),
+        month: createdAt.getMonth() + 1,
+        day: createdAt.getDate(),
+        isCompleted: goal.isCompleted,
+      };
+    });
   }
 
   // 목표 수정
