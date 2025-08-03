@@ -44,7 +44,10 @@ export class AuthService {
     // 가입된 유저가 아니면 회원가입
     if (!user) {
       const createdUser = await this.signUp(password, email, nickName, AuthType.KAKAO);
-      const accessToken = await this.createAccessToken({ email: createdUser.email });
+      const accessToken = await this.createAccessToken({
+        userId: createdUser.userId,
+        email: createdUser.email,
+      });
       const refreshToken = await this.createRefreshToken({ userId: createdUser.userId });
       // refreshToken 저장
       await this.authRepository.setRefreshToken(refreshToken, createdUser.userId);
@@ -56,7 +59,7 @@ export class AuthService {
       throw new BadRequestException('이미 가입된 상태입니다.');
     }
 
-    const accessToken = await this.createAccessToken({ email: user.email });
+    const accessToken = await this.createAccessToken({ userId: user.userId, email: user.email });
     const refreshToken = await this.createRefreshToken({ userId: user.userId });
 
     // refreshToken 저장
@@ -75,7 +78,10 @@ export class AuthService {
     // 가입된 유저가 아니면 회원가입
     if (!user) {
       const createdUser = await this.signUp(password, email, nickName, AuthType.GOOGLE);
-      const accessToken = await this.createAccessToken({ email: createdUser.email });
+      const accessToken = await this.createAccessToken({
+        userId: createdUser.userId,
+        email: createdUser.email,
+      });
       const refreshToken = await this.createRefreshToken({ userId: createdUser.userId });
 
       // refreshToken 저장
@@ -88,7 +94,7 @@ export class AuthService {
       throw new BadRequestException('이미 가입된 상태입니다.');
     }
 
-    const accessToken = await this.createAccessToken({ email: user.email });
+    const accessToken = await this.createAccessToken({ userId: user.userId, email: user.email });
     const refreshToken = await this.createRefreshToken({ userId: user.userId });
 
     // refreshToken 저장
@@ -107,7 +113,10 @@ export class AuthService {
     // 가입된 유저가 아니면 회원가입
     if (!user) {
       const createdUser = await this.signUp(password, email, nickName, AuthType.NAVER);
-      const accessToken = await this.createAccessToken({ email: createdUser.email });
+      const accessToken = await this.createAccessToken({
+        userId: createdUser.userId,
+        email: createdUser.email,
+      });
       const refreshToken = await this.createRefreshToken({ userId: createdUser.userId });
 
       // refreshToken 저장
@@ -120,7 +129,7 @@ export class AuthService {
       throw new BadRequestException('이미 가입된 상태입니다.');
     }
 
-    const accessToken = await this.createAccessToken({ email: user.email });
+    const accessToken = await this.createAccessToken({ userId: user.userId, email: user.email });
     const refreshToken = await this.createRefreshToken({ userId: user.userId });
 
     // refreshToken 저장
@@ -144,7 +153,7 @@ export class AuthService {
     // 유저가 있는지 확인하고 비밀번호가 일치하는지 확인
     if (user && (await bcrypt.compare(password, user.password))) {
       // accessToken 생성
-      const accessToken = await this.createAccessToken({ email });
+      const accessToken = await this.createAccessToken({ userId: user.userId, email });
       const refreshToken = await this.createRefreshToken({ userId: user.userId });
 
       // refreshToken 저장
@@ -236,7 +245,7 @@ export class AuthService {
       throw new UnauthorizedException('accessToken을 생성할 수 없습니다.');
     }
 
-    const accessToken = await this.createAccessToken({ email: user.email });
+    const accessToken = await this.createAccessToken({ userId: user.userId, email: user.email });
 
     this.logger.debug('refresh 메서드 종료');
 
@@ -308,7 +317,7 @@ export class AuthService {
   }
 
   // accessToken
-  private async createAccessToken(payload: { email: string }): Promise<string> {
+  private async createAccessToken(payload: { userId: number; email: string }): Promise<string> {
     return this.jwtService.sign(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
       expiresIn: process.env.ACCESS_TOKEN_EXPIRATION_TIME,
