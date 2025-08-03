@@ -25,13 +25,14 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { multerOptions } from 'src/utils/multer/multer-config';
+import { CheckPasswordDto } from './dto/check-password-dto';
 import { FindUserDto } from './dto/find-user-dto';
 import { UpdateNickNameImageDto } from './dto/update-nickname-image-dto';
 import { UpdatePasswordDto } from './dto/update-password-dto';
+import { UserProfileDto } from './dto/user-profile-dto';
 import { UserEntity } from './entity/user.entity';
 import { getUser } from './get-user-decorator';
 import { UserService } from './user.service';
-import { UserProfileDto } from './dto/user-profile-dto';
 
 @Controller('user')
 export class UserController {
@@ -184,6 +185,37 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   deleteUser(@getUser() user: UserEntity): Promise<string> {
     return this.userService.deleteUser(user);
+  }
+
+  @ApiOperation({
+    summary: '회원 탈퇴 (이메일 로그인용)',
+    description: '비밀번호 검증 후 회원 탈퇴',
+  })
+  @ApiResponse({
+    status: 200,
+    type: String,
+    description: '회원 탈퇴 성공',
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '사용자를 찾을 수 없습니다.',
+  })
+  @ApiBadRequestResponse({
+    description: '비밀번호가 일치하지 않습니다.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '회원 탈퇴 실패',
+  })
+  @ApiBearerAuth()
+  @Delete('/delete/with-password')
+  @UseGuards(AuthGuard('jwt'))
+  deleteUserWithPassword(
+    @getUser() user: UserEntity,
+    @Body() checkPasswordDto: CheckPasswordDto,
+  ): Promise<string> {
+    return this.userService.deleteUserWithPassword(user, checkPasswordDto);
   }
 
   // 인증정보 불러오기 테스트용 API
