@@ -191,6 +191,11 @@ export class FriendRepository {
             bookmarkId: true,
           },
         },
+        _count: {
+          select: {
+            cheers: true,
+          },
+        },
 
         user: {
           where: {
@@ -211,7 +216,6 @@ export class FriendRepository {
         content: true,
         category: true,
         isCompleted: true,
-        cheerCount: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -228,7 +232,7 @@ export class FriendRepository {
       createdAt: goal.createdAt,
       updatedAt: goal.updatedAt,
       isCompleted: goal.isCompleted,
-      cheerCount: goal.cheerCount,
+      cheerCount: goal._count.cheers,
     }));
   }
 
