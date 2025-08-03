@@ -42,7 +42,7 @@ export class FriendController {
   }
 
   @ApiOperation({
-    summary: '사용자의 친구 요청 목록 조회',
+    summary: '사용자가 받은 친구 요청 목록 조회',
     description: '전체 친구 요청 목록을 조회하며 요청이 없으면 0의 배열을 반환.',
   })
   @ApiResponse({
@@ -57,6 +57,24 @@ export class FriendController {
   @Get('/requests')
   findAllFriendRequests(@getUser() user: UserEntity): Promise<FriendRequestDto[]> {
     return this.friendService.findAllFriendRequests(user.userId);
+  }
+
+  @ApiOperation({
+    summary: '사용자가 보낸 친구 요청 목록 조회',
+    description: '사용자가 보낸 친구 요청 목록을 조회하며 요청이 없으면 0의 배열을 반환.',
+  })
+  @ApiResponse({
+    type: FriendRequestDto,
+    isArray: true,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/requests/sent')
+  findAllSentFriendRequests(@getUser() user: UserEntity): Promise<FriendRequestDto[]> {
+    return this.friendService.findAllSentFriendRequests(user.userId);
   }
 
   @ApiOperation({

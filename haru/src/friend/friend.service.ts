@@ -83,6 +83,13 @@ export class FriendService {
     return requests;
   }
 
+  // userId로 사용자가 보낸 모든 친구요청 조회
+  async findAllSentFriendRequests(userId: number): Promise<FriendRequestDto[]> {
+    const requests = await this.friendRepository.findAllSentFriendRequests(userId);
+
+    return requests;
+  }
+
   // 친구 프로필 정보 조회
   async showFriendInfo(friendId: number): Promise<FriendInfoDto> {
     const findFriend = await this.friendRepository.findFriendByUserId(friendId);

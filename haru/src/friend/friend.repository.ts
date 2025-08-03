@@ -132,6 +132,49 @@ export class FriendRepository {
     }));
   }
 
+  // 사용자가 보낸 친구 요청 목록 불러오기
+  async findAllSentFriendRequests(userId: number): Promise<FriendRequestDto[]> {
+    const requests = await this.prisma.friendRequest.findMany({
+      where: {
+        userId, // 나에게 온 요청
+        status: 'PENDING',
+      },
+      select: {
+        requestId: true,
+        userId: true,
+        receiverId: true,
+        status: true,
+        createdAt: true,
+        // 요청 받는 사람의 정보
+        receiver: {
+          select: {
+            nickName: true,
+            email: true,
+            tier: true,
+            image: {
+              select: {
+                imageUrl: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // 데이터 가공: user → nickName, imageUrl 꺼내기
+    return requests.map((request) => ({
+      requestId: request.requestId,
+      userId: request.userId,
+      receiverId: request.receiverId,
+      email: request.receiver.email,
+      tier: request.receiver.tier,
+      status: request.status,
+      createdAt: request.createdAt,
+      nickName: request.receiver.nickName,
+      imageUrl: request.receiver.image?.imageUrl || null,
+    }));
+  }
+
   // 친구id로 친구의 모든 목표 목록 조회
   async findFriendGoalsByFriendId(friendId: number, userId: number): Promise<FriendGoalsDto[]> {
     const result = await this.prisma.goal.findMany({
