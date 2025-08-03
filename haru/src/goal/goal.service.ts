@@ -55,7 +55,7 @@ export class GoalService {
     return this.goalRepository.findGoalsCalender(userId, start, end);
   }
 
-  // 해당 기간의 목표 조회
+  // 해당 기간의 친구 목표 조회
   async findFriendGoalsCalender(
     userId: number,
     friendId: number,
@@ -67,7 +67,7 @@ export class GoalService {
     }
 
     this.logger.debug('기간 목표 조회');
-    return this.goalRepository.findGoalsCalender(userId, start, end);
+    return this.goalRepository.findGoalsCalender(friendId, start, end);
   }
 
   // 목표 수정 (userId를 통한 소유권 검증 로직은 유지)

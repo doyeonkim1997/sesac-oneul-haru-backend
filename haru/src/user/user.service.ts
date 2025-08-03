@@ -14,6 +14,7 @@ import { UpdatePasswordDto } from './dto/update-password-dto';
 import { Tier } from './enum/tier.emum';
 import { UserRepository } from './user.repository';
 import { UserProfileDto } from './dto/user-profile-dto';
+import { CheckPasswordDto } from './dto/check-password-dto';
 
 @Injectable()
 export class UserService {
@@ -137,6 +138,34 @@ export class UserService {
 
     if (!findUser) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    const isDeleted = await this.userRepository.deleteUser(user.userId);
+
+    if (!isDeleted) {
+      throw new InternalServerErrorException('회원 탈퇴 실패');
+    }
+
+    return '회원 탈퇴 성공';
+  }
+
+  // 회원 탈퇴 (이메일 로그인 사용자)
+  async deleteUserWithPassword(
+    user: UserEntity,
+    checkPasswordDto: CheckPasswordDto,
+  ): Promise<string> {
+    this.logger.debug(`회원탈퇴 (비밀번호 검증) service 실행`);
+    const { password } = checkPasswordDto;
+
+    const findUser = await this.userRepository.findUserByUserIdForUpdate(user.userId);
+
+    if (!findUser) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 비밀번호 검증
+    if (!(await bcrypt.compare(password, findUser.password))) {
+      throw new BadRequestException('비밀번호가 일치하지 않습니다.');
     }
 
     const isDeleted = await this.userRepository.deleteUser(user.userId);
