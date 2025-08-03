@@ -342,10 +342,10 @@ export class AuthController {
   })
   @Post('/logout')
   @UseGuards(JwtRefreshGuard)
-  async logout(@Req() req: any, @Res() res: Response): Promise<any> {
+  async logout(@getUser() user: UserEntity, @Res() res: Response): Promise<any> {
     this.logger.debug('로그아웃 컨트롤러 시작');
-    this.logger.debug(`${req.user.id} 확인`);
-    await this.authService.removeRefreshToken(req.user.userId);
+    this.logger.debug(`${user.userId} 확인`);
+    await this.authService.removeRefreshToken(user.userId);
     // res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     this.logger.debug('로그아웃 컨트롤라 종료');

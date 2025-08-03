@@ -52,6 +52,7 @@ export class GoalRepository {
         select: {
           user: {
             select: {
+              userId: true,
               nickName: true,
               image: {
                 select: {
@@ -82,6 +83,7 @@ export class GoalRepository {
 
       return result.map((goal) => ({
         goalId: goal.goalId,
+        userId: goal.user?.userId ?? 0,
         nickName: goal.user?.nickName ?? '',
         imageUrl: goal.user?.image?.imageUrl ?? null,
         isBookmarked: goal.bookmarks.length > 0,
