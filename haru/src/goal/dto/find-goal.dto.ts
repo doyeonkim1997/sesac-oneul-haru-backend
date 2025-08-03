@@ -9,6 +9,14 @@ export class FindGoalDto {
   })
   goalId: number;
 
+  @ApiProperty({
+    type: Number,
+    description: '유저id',
+    example: 1,
+    required: true,
+  })
+  userId: number;
+
   @ApiProperty({ example: '닉네임', description: '사용자 닉네임' })
   nickName: string;
 
