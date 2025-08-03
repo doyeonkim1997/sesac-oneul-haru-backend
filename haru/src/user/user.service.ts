@@ -47,14 +47,11 @@ export class UserService {
   ): Promise<UpdateOutputUserInfoDto> {
     const { nickName } = updateNickNameImageDto;
 
-    let imageUrl: string | null;
+    let imageUrl: string | null = null;
 
-    // 이미지 파일을 변하하지 않음
-    if (!file) {
-      imageUrl = null;
+    if (file) {
+      imageUrl = file.path.replace(/\\/g, '/').replace(/^public/, '');
     }
-
-    imageUrl = file.path.replace(/\\/g, '/').replace(/^public/, '');
 
     const findUser = await this.userRepository.findUserByUserIdForUpdate(user.userId);
 
@@ -62,21 +59,10 @@ export class UserService {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
 
-    await this.uploadUserImage(user.userId, imageUrl);
-
-    // 이미지 Url이 있을 경우
-    // if (imageUrl) {
-    //   const profileImage = await this.userRepository.findProfileImageByUser(user);
-
-    //   // 이미지가 존재하지않을 경우 (처음 이미지 설정)
-    //   if (!profileImage) {
-    //     // 이미지 생성 후 설정(기본 이미지 생성하면 필요없어질 로직)
-    //     const image = await this.userRepository.createImage(imageUrl);
-    //     await this.userRepository.updateProfileImage(image.imageId, imageUrl);
-    //   } else {
-    //     await this.userRepository.updateProfileImage(profileImage.imageId, imageUrl);
-    //   }
-    // }
+    // 이미지가 있는 경우만 업데이트
+    if (imageUrl) {
+      await this.uploadUserImage(user.userId, imageUrl);
+    }
 
     return await this.userRepository.updateNickname(findUser.userId, nickName);
   }
