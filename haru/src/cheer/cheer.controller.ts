@@ -116,4 +116,25 @@ export class CheerController {
     const count = await this.cheerService.todayCheerCount(user.userId);
     return { todayCheerCount: count };
   }
+
+  @ApiOperation({
+    summary: '로그인한 사용자가 응원한 목표의 id 리스트 조회',
+    description: '로그인한 사용자가 응원한 goalId 리스트 조회',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '사용자가 응원한 모든 목표 id들',
+    type: Number,
+    isArray: true,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiBearerAuth()
+  // 내가 응원한 goalId 리스트 조회
+  @Get('my-cheers')
+  @UseGuards(AuthGuard('jwt'))
+  async getMyCheers(@getUser() user: UserEntity): Promise<number[]> {
+    return await this.cheerService.getMyCheeredGoalIds(user.userId);
+  }
 }
