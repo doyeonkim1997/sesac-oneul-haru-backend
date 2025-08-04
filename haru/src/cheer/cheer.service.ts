@@ -26,8 +26,13 @@ export class CheerService {
     const findCheer = await this.cheerRepository.findCurrentCheer(goalId, userId);
 
     if (findCheer) {
-      await this.cheerRepository.deleteCheer(goalId, userId);
-      return '응원 삭제';
+      // 현재 유저가 이미 응원한 경우만 삭제 가능
+      if (findCheer.userId === userId) {
+        await this.cheerRepository.deleteCheer(goalId, userId);
+        return '응원 삭제';
+      } else {
+        throw new BadRequestException('다른 사용자의 응원은 취소할 수 없습니다.');
+      }
     } else {
       await this.cheerRepository.createCheer(goalId, userId);
       return '응원 추가';
