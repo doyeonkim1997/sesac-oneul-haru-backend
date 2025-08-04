@@ -27,6 +27,7 @@ model User {
   // auths                  Auth[]
   bookmarks              Bookmark[]
   goals                  Goal[]
+  cheers Cheer[] 
 }
 
 model EmailVerification {
@@ -71,6 +72,21 @@ model Bookmark {
   @@unique([userId, goalId])
 }
 
+model Cheer {
+  cheerId   Int      @id @default(autoincrement()) @map("cheer_id")
+  userId    Int      @map("user_id")
+  goalId    Int      @map("goal_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  goal Goal @relation(fields: [goalId], references: [goalId], onDelete: Cascade)
+
+  @@unique([userId, goalId])
+}
+
+
+
 model Goal {
   goalId      Int       @id @default(autoincrement()) @map("goal_id")
   userId      Int       @map("user_id")
@@ -78,11 +94,11 @@ model Goal {
   category    String    @default("ETC") @map("category")
   isCompleted Boolean   @default(false) @map("is_completed")
   isDeleted   Boolean   @default(false) @map("is_deleted")
-  cheerCount  Int       @default(0)     @map("cheer_count")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime? @map("updated_at")
 
   // Relations
   bookmarks Bookmark[]
+  cheers Cheer[] 
   user      User?      @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }

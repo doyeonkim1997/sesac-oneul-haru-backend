@@ -10,6 +10,7 @@ import { FriendModule } from './friend/friend.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { NotificationModule } from './notification/notification.module';
+import { CheerModule } from './cheer/cheer.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NotificationModule } from './notification/notification.module';
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/',
     }),
+    CheerModule,
   ],
 })
 export class AppModule {}

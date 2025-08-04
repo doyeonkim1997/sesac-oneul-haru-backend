@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { GoalRepository } from '../goal/goal.repository';
 import { Response } from 'express';
+import { GoalRepository } from '../goal/goal.repository';
 
 @Injectable()
 export class NotificationService {
@@ -18,19 +18,19 @@ export class NotificationService {
   }
 
   //sse
-  private clients: Response[] = [];
+  private clients: { userId: number; res: Response }[] = [];
 
-  addClient(res: Response) {
-    this.clients.push(res);
+  addClient(userId: number, res: Response) {
+    this.clients.push({ userId, res });
   }
 
   removeClient(res: Response) {
-    this.clients = this.clients.filter((client) => client !== res);
+    this.clients = this.clients.filter((client) => client.res !== res);
   }
 
   sendNotification(msg: string) {
     const data = `data: ${msg}\n\n`;
-    this.clients.forEach((client) => client.write(data));
+    this.clients.forEach((client) => client.res.write(data));
   }
 
   // 자정되기 1시가전 알림
@@ -39,24 +39,20 @@ export class NotificationService {
   async handleReminderAlert() {
     const { todayStart, todayEnd } = this.getTodayRange();
 
-    const inCompleteGoals = await this.goalRepository.findIncompleteGoal(todayStart, todayEnd);
-    this.logger
-      .log(`경고! 목표 종료까지 1시간 남았습니다. 미완료 목표${inCompleteGoals.length}개 발견
-      남은 시간까지 열심히 해봐요!`);
+    for (const client of this.clients) {
+      const userId = client.userId;
 
-    if (inCompleteGoals.length > 0) {
-      this.sendNotification(
-        `사용자님의 ${inCompleteGoals.length}개의 목표가 아직 완료되지 않았어요!`,
+      const incompleteGoals = await this.goalRepository.findIncompleteGoal(
+        userId,
+        todayStart,
+        todayEnd,
       );
+      const count = incompleteGoals.length;
+
+      if (count > 0) {
+        const msg = `오늘 완료하지 않은 목표가 ${count}개 있습니다! 마무리할 시간이에요!`;
+        client.res.write(`data: ${msg}\n\n`);
+      }
     }
-  }
-
-  @Cron('*/10 * * * * *')
-  async resetCheerCount() {
-    const { todayStart, todayEnd } = this.getTodayRange();
-
-    await this.goalRepository.resetCount(todayStart, todayEnd);
-
-    this.logger.log(`자정이 되어 오늘 생성된 목표의 응원수가 초기화 됩니다.`);
   }
 }

@@ -59,15 +59,6 @@ export class GoalEntity {
   isDeleted: boolean;
 
   @ApiProperty({
-    type: Number,
-    description: '응원 수',
-    example: 10,
-    required: true,
-  })
-  @IsInt()
-  cheerCount: number;
-
-  @ApiProperty({
     type: Date,
     description: '생성 일자',
     example: '2023-10-01T12:00:00Z',

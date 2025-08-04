@@ -5,10 +5,9 @@ import { FindGoalDto } from './dto/find-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 
 import { endOfDay, startOfDay } from 'date-fns';
-import { CheerResponseDto } from './dto/cheer-response.dto';
+import { GoalsCalenderDto } from './dto/goals-calender.dto';
 import { OutputGoalDto } from './dto/output-goal.dto';
 import { GoalEntity } from './entity/goal.entity';
-import { GoalsCalenderDto } from './dto/goals-calender.dto';
 
 @Injectable()
 export class GoalRepository {
@@ -70,13 +69,18 @@ export class GoalRepository {
               bookmarkId: true,
             },
           },
+
+          _count: {
+            select: {
+              cheers: true,
+            },
+          },
           goalId: true,
           content: true,
           category: true,
           createdAt: true,
           updatedAt: true,
           isCompleted: true,
-          cheerCount: true,
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -92,7 +96,7 @@ export class GoalRepository {
         createdAt: goal.createdAt,
         updatedAt: goal.updatedAt,
         isCompleted: goal.isCompleted,
-        cheerCount: goal.cheerCount,
+        cheerCount: goal._count.cheers,
       }));
     } catch {
       throw new InternalServerErrorException('목표 목록 조회에 실패했습니다.');
@@ -273,77 +277,79 @@ export class GoalRepository {
   }
 
   // 응원 증가
-  async cheerGoal(goalId: number): Promise<CheerResponseDto> {
-    try {
-      const updatedGoal = await this.prisma.goal.update({
-        where: { goalId },
-        data: { cheerCount: { increment: 1 } },
-        select: { goalId: true, cheerCount: true },
-      });
-      return updatedGoal;
-    } catch {
-      throw new NotFoundException('목표를 찾을 수 없습니다.');
-    }
-  }
+  // async cheerGoal(goalId: number): Promise<CheerResponseDto> {
+  //   try {
+  //     const updatedGoal = await this.prisma.goal.update({
+  //       where: { goalId },
+  //       data: { cheerCount: { increment: 1 } },
+  //       select: { goalId: true, cheerCount: true },
+  //     });
+  //     return updatedGoal;
+  //   } catch {
+  //     throw new NotFoundException('목표를 찾을 수 없습니다.');
+  //   }
+  // }
 
-  // 응원 취소
-  async cancelCheerGoal(goalId: number): Promise<CheerResponseDto> {
-    try {
-      const goal = await this.prisma.goal.findUnique({
-        where: { goalId },
-        select: { cheerCount: true },
-      });
-      if (!goal) throw new NotFoundException('목표를 찾을 수 없습니다.');
+  // // 응원 취소
+  // async cancelCheerGoal(goalId: number): Promise<CheerResponseDto> {
+  //   try {
+  //     const goal = await this.prisma.goal.findUnique({
+  //       where: { goalId },
+  //       select: { cheerCount: true },
+  //     });
+  //     if (!goal) throw new NotFoundException('목표를 찾을 수 없습니다.');
 
-      const newCount = goal.cheerCount > 0 ? goal.cheerCount - 1 : 0;
+  //     const newCount = goal.cheerCount > 0 ? goal.cheerCount - 1 : 0;
 
-      const updatedGoal = await this.prisma.goal.update({
-        where: { goalId },
-        data: { cheerCount: newCount },
-        select: { goalId: true, cheerCount: true },
-      });
-      return updatedGoal;
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException('응원 취소에 실패했습니다.');
-    }
-  }
+  //     const updatedGoal = await this.prisma.goal.update({
+  //       where: { goalId },
+  //       data: { cheerCount: newCount },
+  //       select: { goalId: true, cheerCount: true },
+  //     });
+  //     return updatedGoal;
+  //   } catch (error) {
+  //     if (error instanceof NotFoundException) throw error;
+  //     throw new InternalServerErrorException('응원 취소에 실패했습니다.');
+  //   }
+  // }
 
-  // 전체 응원 누적 수
-  async totalCheerCount(userId: number): Promise<number> {
-    try {
-      const result = await this.prisma.goal.aggregate({
-        _sum: { cheerCount: true },
-        where: { userId, isDeleted: false },
-      });
-      return result._sum.cheerCount ?? 0;
-    } catch {
-      throw new InternalServerErrorException('전체 응원 누적 수 조회에 실패했습니다.');
-    }
-  }
+  // // 전체 응원 누적 수
+  // async totalCheerCount(userId: number): Promise<number> {
+  //   try {
+  //     const result = await this.prisma.goal.aggregate({
+  //       _sum: { cheerCount: true },
+  //       where: { userId, isDeleted: false },
+  //     });
+  //     return result._sum.cheerCount ?? 0;
+  //   } catch {
+  //     throw new InternalServerErrorException('전체 응원 누적 수 조회에 실패했습니다.');
+  //   }
+  // }
 
-  // 오늘 응원 누적 수
-  async todayCheerCount(userId: number, todayStart: Date, todayEnd: Date): Promise<number> {
-    try {
-      const result = await this.prisma.goal.aggregate({
-        _sum: { cheerCount: true },
-        where: {
-          userId,
-          createdAt: { gte: todayStart, lte: todayEnd },
-          isDeleted: false,
-        },
-      });
-      return result._sum.cheerCount ?? 0;
-    } catch {
-      throw new InternalServerErrorException('오늘 응원 누적 수 조회에 실패했습니다.');
-    }
-  }
+  // // 오늘 응원 누적 수
+  // async todayCheerCount(userId: number, todayStart: Date, todayEnd: Date): Promise<number> {
+  //   try {
+  //     const result = await this.prisma.goal.aggregate({
+  //       _sum: { cheerCount: true },
+  //       where: {
+  //         userId,
+  //         createdAt: { gte: todayStart, lte: todayEnd },
+  //         isDeleted: false,
+  //       },
+  //     });
+  //     return result._sum.cheerCount ?? 0;
+  //   } catch {
+  //     throw new InternalServerErrorException('오늘 응원 누적 수 조회에 실패했습니다.');
+  //   }
+  // }
 
   // 목표 미완료자 찾기
-  async findIncompleteGoal(todayStart: Date, todayEnd: Date) {
+  async findIncompleteGoal(userId: number, todayStart: Date, todayEnd: Date) {
     return await this.prisma.goal.findMany({
       where: {
+        userId,
         isCompleted: false,
+        isDeleted: false,
         createdAt: {
           gte: todayStart,
           lte: todayEnd,
@@ -356,17 +362,17 @@ export class GoalRepository {
   }
 
   // 자정 금일 응원 수 초기화
-  async resetCount(todayStart: Date, todayEnd: Date): Promise<void> {
-    await this.prisma.goal.updateMany({
-      where: {
-        createdAt: {
-          gte: todayStart,
-          lte: todayEnd,
-        },
-      },
-      data: {
-        cheerCount: 0,
-      },
-    });
-  }
+  // async resetCount(todayStart: Date, todayEnd: Date): Promise<void> {
+  //   await this.prisma.goal.updateMany({
+  //     where: {
+  //       createdAt: {
+  //         gte: todayStart,
+  //         lte: todayEnd,
+  //       },
+  //     },
+  //     data: {
+  //       cheerCount: 0,
+  //     },
+  //   });
+  // }
 }

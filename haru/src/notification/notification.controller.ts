@@ -9,6 +9,8 @@ import {
   ApiNotFoundResponse,
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
+import { getUser } from 'src/user/get-user-decorator';
+import { UserEntity } from 'src/user/entity/user.entity';
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
@@ -32,14 +34,14 @@ export class NotificationController {
   })
   @Get('sse')
   @UseGuards(AuthGuard('jwt'))
-  sse(@Req() req: Request, @Res() res: Response) {
+  sse(@getUser() user: UserEntity, @Req() req: Request, @Res() res: Response) {
     res.set({
       'Content-Type': 'text/event-stream',
       'cache-control': 'no-cache',
       Connection: 'keep-alive',
     });
     res.flushHeaders();
-    this.notificationService.addClient(res);
+    this.notificationService.addClient(user.userId, res);
     req.on('close', () => {
       this.notificationService.removeClient(res);
     });

@@ -25,12 +25,11 @@ import {
 } from '@nestjs/swagger';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { getUser } from 'src/user/get-user-decorator';
-import { CheerResponseDto } from './dto/cheer-response.dto';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { FindGoalDto } from './dto/find-goal.dto';
+import { GoalsCalenderDto } from './dto/goals-calender.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { GoalService } from './goal.service';
-import { GoalsCalenderDto } from './dto/goals-calender.dto';
 
 @ApiTags('Goal')
 @Controller('goals')
@@ -243,136 +242,136 @@ export class GoalController {
   }
 
   // 응원 증가
-  @ApiOperation({
-    summary: '응원 증가',
-    description: '응원 증가',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '응원 증가',
-    type: CheerResponseDto,
-  })
-  @ApiUnauthorizedResponse({
-    description: '로그인이 필요합니다.',
-  })
-  @ApiNotFoundResponse({
-    description: '유효하지 않는 사용자입니다',
-  })
-  @ApiInternalServerErrorResponse({
-    description: '목표 삭제에 실패했습니다.',
-  })
-  @ApiNotFoundResponse({
-    description: '응원할 목표가 존재하지 않습니다.',
-  })
-  @ApiBadRequestResponse({
-    description: '자신의 목표는 응원할 수 없습니다.',
-  })
-  @ApiBearerAuth()
-  @Get(':goalId/cheer')
-  @UseGuards(AuthGuard('jwt'))
-  async cheerGoal(@Param('goalId', ParseIntPipe) goalId: number, @getUser() user: UserEntity) {
-    return await this.goalService.cheerGoal(goalId, user.userId);
-  }
+  // @ApiOperation({
+  //   summary: '응원 증가',
+  //   description: '응원 증가',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: '응원 증가',
+  //   type: CheerResponseDto,
+  // })
+  // @ApiUnauthorizedResponse({
+  //   description: '로그인이 필요합니다.',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '유효하지 않는 사용자입니다',
+  // })
+  // @ApiInternalServerErrorResponse({
+  //   description: '목표 삭제에 실패했습니다.',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '응원할 목표가 존재하지 않습니다.',
+  // })
+  // @ApiBadRequestResponse({
+  //   description: '자신의 목표는 응원할 수 없습니다.',
+  // })
+  // @ApiBearerAuth()
+  // @Patch(':goalId/cheer')
+  // @UseGuards(AuthGuard('jwt'))
+  // async cheerGoal(@Param('goalId', ParseIntPipe) goalId: number, @getUser() user: UserEntity) {
+  //   return await this.goalService.cheerGoal(goalId, user.userId);
+  // }
 
-  // 응원 삭제
-  @ApiOperation({
-    summary: '응원 감소',
-    description: '응원 감소',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '응원 감소',
-    type: CheerResponseDto,
-  })
-  @ApiUnauthorizedResponse({
-    description: '로그인이 필요합니다.',
-  })
-  @ApiNotFoundResponse({
-    description: '유효하지 않는 사용자입니다',
-  })
-  @ApiNotFoundResponse({
-    description: '응원할 목표가 존재하지 않습니다.',
-  })
-  @ApiBadRequestResponse({
-    description: '자신의 목표는 응원할 수 없습니다.',
-  })
-  @ApiBearerAuth()
-  @Delete(':goalId/cheer')
-  @UseGuards(AuthGuard('jwt'))
-  async cancelCheerGoal(
-    @Param('goalId', ParseIntPipe) goalId: number,
-    @getUser() user: UserEntity,
-  ) {
-    return await this.goalService.cancelCheerGoal(goalId, user.userId);
-  }
+  // // 응원 삭제
+  // @ApiOperation({
+  //   summary: '응원 감소',
+  //   description: '응원 감소',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: '응원 감소',
+  //   type: CheerResponseDto,
+  // })
+  // @ApiUnauthorizedResponse({
+  //   description: '로그인이 필요합니다.',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '유효하지 않는 사용자입니다',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '응원할 목표가 존재하지 않습니다.',
+  // })
+  // @ApiBadRequestResponse({
+  //   description: '자신의 목표는 응원할 수 없습니다.',
+  // })
+  // @ApiBearerAuth()
+  // @Delete(':goalId/cheer')
+  // @UseGuards(AuthGuard('jwt'))
+  // async cancelCheerGoal(
+  //   @Param('goalId', ParseIntPipe) goalId: number,
+  //   @getUser() user: UserEntity,
+  // ) {
+  //   return await this.goalService.cancelCheerGoal(goalId, user.userId);
+  // }
 
-  // 전체 누적 응원 수
-  @ApiOperation({
-    summary: '전체 누적 응원 수',
-    description: '전체 누적 응원 수',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '전체 누적 응원 수',
-    schema: {
-      type: 'object',
-      properties: {
-        totalCheerCount: {
-          type: 'number',
-          example: 7,
-        },
-      },
-    },
-  })
-  @ApiUnauthorizedResponse({
-    description: '로그인이 필요합니다.',
-  })
-  @ApiNotFoundResponse({
-    description: '유효하지 않는 사용자입니다',
-  })
-  @ApiInternalServerErrorResponse({
-    description: '전체 응원 누적 수 조회에 실패했습니다.',
-  })
-  @ApiBearerAuth()
-  @Get('cheer/total')
-  @UseGuards(AuthGuard('jwt'))
-  async getTotalCheerCount(@getUser() user: UserEntity) {
-    const count = await this.goalService.totalCheerCount(user.userId);
-    return { totalCheerCount: count };
-  }
+  // // 전체 누적 응원 수
+  // @ApiOperation({
+  //   summary: '전체 누적 응원 수',
+  //   description: '전체 누적 응원 수',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: '전체 누적 응원 수',
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       totalCheerCount: {
+  //         type: 'number',
+  //         example: 7,
+  //       },
+  //     },
+  //   },
+  // })
+  // @ApiUnauthorizedResponse({
+  //   description: '로그인이 필요합니다.',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '유효하지 않는 사용자입니다',
+  // })
+  // @ApiInternalServerErrorResponse({
+  //   description: '전체 응원 누적 수 조회에 실패했습니다.',
+  // })
+  // @ApiBearerAuth()
+  // @Get('cheer/total')
+  // @UseGuards(AuthGuard('jwt'))
+  // async getTotalCheerCount(@getUser() user: UserEntity) {
+  //   const count = await this.goalService.totalCheerCount(user.userId);
+  //   return { totalCheerCount: count };
+  // }
 
-  // 오늘 누적 응원 수
-  @ApiOperation({
-    summary: '오늘 누적 응원 수',
-    description: '오늘 누적된 전체 응원 개수',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '오늘 누적된 전체 응원 개수',
-    schema: {
-      type: 'object',
-      properties: {
-        totalCheerCount: {
-          type: 'number',
-          example: 7,
-        },
-      },
-    },
-  })
-  @ApiUnauthorizedResponse({
-    description: '로그인이 필요합니다.',
-  })
-  @ApiNotFoundResponse({
-    description: '유효하지 않는 사용자입니다',
-  })
-  @ApiInternalServerErrorResponse({
-    description: '오늘 응원 누적 수 조회에 실패했습니다.',
-  })
-  @ApiBearerAuth()
-  @Get('cheer/today')
-  @UseGuards(AuthGuard('jwt'))
-  async getTodayCheerCount(@getUser() user: UserEntity) {
-    const count = this.goalService.todayCheerCount(user.userId);
-    return { todayCheerCount: count };
-  }
+  // // 오늘 누적 응원 수
+  // @ApiOperation({
+  //   summary: '오늘 누적 응원 수',
+  //   description: '오늘 누적된 전체 응원 개수',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: '오늘 누적된 전체 응원 개수',
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       totalCheerCount: {
+  //         type: 'number',
+  //         example: 7,
+  //       },
+  //     },
+  //   },
+  // })
+  // @ApiUnauthorizedResponse({
+  //   description: '로그인이 필요합니다.',
+  // })
+  // @ApiNotFoundResponse({
+  //   description: '유효하지 않는 사용자입니다',
+  // })
+  // @ApiInternalServerErrorResponse({
+  //   description: '오늘 응원 누적 수 조회에 실패했습니다.',
+  // })
+  // @ApiBearerAuth()
+  // @Get('cheer/today')
+  // @UseGuards(AuthGuard('jwt'))
+  // async getTodayCheerCount(@getUser() user: UserEntity) {
+  //   const count = this.goalService.todayCheerCount(user.userId);
+  //   return { todayCheerCount: count };
+  // }
 }
