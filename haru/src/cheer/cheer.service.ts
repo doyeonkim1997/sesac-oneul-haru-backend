@@ -54,4 +54,9 @@ export class CheerService {
 
     return await this.cheerRepository.todayCheerCount(userId, start, end);
   }
+
+  // 내가 응원한 goalId 목록 조회
+  async getMyCheeredGoalIds(userId: number): Promise<number[]> {
+    return await this.cheerRepository.findAllGoalIds(userId);
+  }
 }

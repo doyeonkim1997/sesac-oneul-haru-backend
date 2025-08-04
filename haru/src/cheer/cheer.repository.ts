@@ -103,4 +103,18 @@ export class CheerRepository {
     });
     return todayCount;
   }
+
+  // 내가 응원한 목표의 id 목록 가져오기
+  async findAllGoalIds(userId: number): Promise<number[]> {
+    const cheers = await this.prisma.cheer.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        goalId: true,
+      },
+    });
+
+    return cheers.map((c) => c.goalId);
+  }
 }
