@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { GoalRepository } from 'src/goal/goal.repository';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
-import { GoalRepository } from 'src/goal/goal.repository';
 
 @Module({
   controllers: [NotificationController],

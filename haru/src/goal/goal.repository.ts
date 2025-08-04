@@ -344,10 +344,12 @@ export class GoalRepository {
   // }
 
   // 목표 미완료자 찾기
-  async findIncompleteGoal(todayStart: Date, todayEnd: Date) {
+  async findIncompleteGoal(userId: number, todayStart: Date, todayEnd: Date) {
     return await this.prisma.goal.findMany({
       where: {
+        userId,
         isCompleted: false,
+        isDeleted: false,
         createdAt: {
           gte: todayStart,
           lte: todayEnd,
