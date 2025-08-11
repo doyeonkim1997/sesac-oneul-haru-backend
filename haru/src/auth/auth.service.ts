@@ -233,6 +233,10 @@ export class AuthService {
   }> {
     this.logger.debug('refresh 메서드 시작');
 
+    if (!refreshToken) {
+      throw new UnauthorizedException('accessToken을 생성할 수 없습니다.');
+    }
+
     const decodedRefreshToken = await this.jwtService.verify(refreshToken, {
       secret: process.env.JWT_REFRESH_SECRET,
     });
