@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId       Int       @id @default(autoincrement())  @map("user_id")
+  nickName     String    @map("nickname")
+  email        String    @unique  @map("email")
+  password     String    @map("password")
+  refreshToken String?   @map("refresh_token")
+  authType     String    @map("auth_type")
+  tier         String    @map("tier")
+  isDeleted    Boolean   @default(false)  @map("is_deleted")
+  createdAt    DateTime  @default(now())  @map("created_at")
+  updatedAt    DateTime? @map("updated_at")
+
+  // Relations
+  friendRequestsSent     FriendRequest[] @relation("Requester")
+  friendRequestsReceived FriendRequest[] @relation("Receiver")
+  image   Image? @relation(fields: [imageId], references: [imageId], onDelete: Cascade)
+  imageId                Int?            @unique  @map("image_id")
+  // auths                  Auth[]
+  bookmarks              Bookmark[]
+  goals                  Goal[]
+  cheers Cheer[] 
+}
+
+model EmailVerification {
+  emailId        Int       @id @default(autoincrement())  @map("email_id")
+  email          String    @map("email")
+  validCode      String    @map("valid_code")
+  expirationTime DateTime?  @map("expiration_time")
+  isVerified     Boolean   @default(false)  @map("is_verified")
+  createdAt      DateTime  @default(now())  @map("created_at")
+}
+
+model FriendRequest {
+  requestId  Int      @id @default(autoincrement()) @map("request_id")
+  userId     Int      @map("requester_id") 
+  receiverId Int      @map("receiver_id")
+  status     String   @default("PENDING") @map("status")
+  createdAt  DateTime @default(now()) @map("created-at")
+
+  // Relations
+  user     User @relation("Requester", fields: [userId], references: [userId], onDelete: Cascade)
+  receiver User @relation("Receiver", fields: [receiverId], references: [userId], onDelete: Cascade)
+}
+
+model Image {
+  imageId  Int    @id @default(autoincrement())   @map("image_id")
+  imageUrl String @map("image_url")
+
+  // Relations
+  user User?
+}
+
+model Bookmark {
+  bookmarkId   Int     @id @default(autoincrement())  @map("bookmark_id")
+  userId       Int     @map("user_id")
+  goalId       Int     @map("goal_id")
+  // isBookmarked Boolean @default(false)  @map("is_bookmarked")
+
+  // Relations
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  goal Goal @relation(fields: [goalId], references: [goalId], onDelete: Cascade)
+
+  @@unique([userId, goalId])
+}
+
+model Cheer {
+  cheerId   Int      @id @default(autoincrement()) @map("cheer_id")
+  userId    Int      @map("user_id")
+  goalId    Int      @map("goal_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  goal Goal @relation(fields: [goalId], references: [goalId], onDelete: Cascade)
+
+  @@unique([userId, goalId])
+}
+
+
+
+model Goal {
+  goalId      Int       @id @default(autoincrement()) @map("goal_id")
+  userId      Int       @map("user_id")
+  content     String    @map("content")
+  category    String    @default("ETC") @map("category")
+  isCompleted Boolean   @default(false) @map("is_completed")
+  isDeleted   Boolean   @default(false) @map("is_deleted")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+
+  // Relations
+  bookmarks Bookmark[]
+  cheers Cheer[] 
+  user      User?      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}

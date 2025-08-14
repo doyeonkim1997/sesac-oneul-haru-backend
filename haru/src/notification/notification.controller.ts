@@ -1,0 +1,49 @@
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { NotificationService } from './notification.service';
+import { AuthGuard } from '@nestjs/passport';
+import { Response, Request } from 'express';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiUnauthorizedResponse,
+  ApiNotFoundResponse,
+  ApiInternalServerErrorResponse,
+} from '@nestjs/swagger';
+import { getUser } from 'src/user/get-user-decorator';
+import { UserEntity } from 'src/user/entity/user.entity';
+@Controller('notifications')
+export class NotificationController {
+  constructor(private readonly notificationService: NotificationService) {}
+  @ApiOperation({
+    summary: '목표 미완료자 알림',
+    description: '목표 미완료자 알림',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '목표 미완료자 알림',
+    type: String,
+  })
+  @ApiUnauthorizedResponse({
+    description: '로그인이 필요합니다.',
+  })
+  @ApiNotFoundResponse({
+    description: '유효하지 않는 사용자입니다',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '미완료된 목표가 없습니다.',
+  })
+  @Get('sse')
+  @UseGuards(AuthGuard('jwt'))
+  sse(@getUser() user: UserEntity, @Req() req: Request, @Res() res: Response) {
+    res.set({
+      'Content-Type': 'text/event-stream',
+      'cache-control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+    res.flushHeaders();
+    this.notificationService.addClient(user.userId, res);
+    req.on('close', () => {
+      this.notificationService.removeClient(res);
+    });
+  }
+}
